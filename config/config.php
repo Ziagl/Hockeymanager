@@ -1,0 +1,5 @@
+<?php
+$DATABASE_HOST = 'localhost';
+$DATABASE_USER = 'd03f724a';
+$DATABASE_PASS = '8wDJ5sb9TSYgxNJsq5vA';
+$DATABASE_NAME = 'd03f724a';
