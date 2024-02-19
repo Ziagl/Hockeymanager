@@ -35,8 +35,11 @@ $stmt->close();
 	<body class="loggedin">
 		<nav class="navtop">
 			<div>
-				<h1>Website Title</h1>
+				<h1><a href="home.php">NHL Manager</a></h1>
 				<a href="profile.php"><i class="fas fa-user-circle"></i>Profile</a>
+<?php if($_SESSION['admin'] > 0) {?>
+				<a href="admin.php"><i class="fas fa-user-secret"></i>Admin</a>
+<?php }?>
 				<a href="logout.php"><i class="fas fa-sign-out-alt"></i>Logout</a>
 			</div>
 		</nav>
