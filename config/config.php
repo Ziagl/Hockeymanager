@@ -1,5 +1,10 @@
 <?php
+// database login
 $DATABASE_HOST = 'localhost';
-$DATABASE_USER = 'd03f724a';
-$DATABASE_PASS = '8wDJ5sb9TSYgxNJsq5vA';
-$DATABASE_NAME = 'd03f724a';
+$DATABASE_USER = '###';
+$DATABASE_PASS = '###';
+$DATABASE_NAME = '###';
+
+// app data
+$DOMAIN = 'yourdomain.com';
+$DOMAINPATH = 'https://' . $DOMAIN . '/pathtoapplication/';
