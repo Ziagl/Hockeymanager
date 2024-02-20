@@ -33,6 +33,12 @@ include 'content/header.php';
 			<td>Email:</td>
 			<td><?=$email?></td>
 		</tr>
+<?php if($_SESSION['admin'] > 0) {?>
+		<tr>
+			<td>Admin:</td>
+			<td><i class="fas fa-check-circle"></i></td>
+		</tr>
+<?php } ?>
 	</table>
 </div>
 <?php
