@@ -1,11 +1,6 @@
 <?php
-include_once 'config/config.php';
+include_once 'config/functions.php';
 include 'content/session.php';
-
-$con = mysqli_connect($DATABASE_HOST, $DATABASE_USER, $DATABASE_PASS, $DATABASE_NAME);
-if (mysqli_connect_errno()) {
-	exit('Failed to connect to MySQL: ' . mysqli_connect_error());
-}
 
 // form response
 
@@ -41,7 +36,7 @@ $stmt->close();
 		<div class="register">
 			<h1>Choose your dream team</h1>
 			<form method="POST" action="">
-                <select name="team_id" onchange="this.form.submit()">
+                <select aria-label="dream team" name="team_id" onchange="this.form.submit()">
                     <?php foreach($teams as $team) {?>
                         <option value="<?=$team['id']?>"><?=$team['name']?></option>
                     <?php } ?>

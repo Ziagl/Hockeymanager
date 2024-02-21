@@ -1,11 +1,6 @@
 <?php
-include_once 'config/config.php';
+include_once 'config/functions.php';
 include 'content/session.php';
-
-$con = mysqli_connect($DATABASE_HOST, $DATABASE_USER, $DATABASE_PASS, $DATABASE_NAME);
-if (mysqli_connect_errno()) {
-	exit('Failed to connect to MySQL: ' . mysqli_connect_error());
-}
 
 // form response
 
@@ -14,6 +9,10 @@ if(isset($_POST["team_id"]) && isset($_POST["user_id"])) {
 	$stmt = $con->prepare('UPDATE User SET team_id = ? WHERE id = ?');
 	$stmt->bind_param('ii', $_POST['team_id'], $_POST['user_id']);
 	$stmt->execute();
+}
+// reset game
+if(isset($_POST["reset_game"])) {
+	initialize_game($con, $MAX_GOALS_HOME, $MAX_GOALS_AWAY);
 }
 
 // get data from database
@@ -76,6 +75,11 @@ include 'content/header.php';
 		</tr>
 <?php } ?>
 	</table>
+	<p>Functions:</p>
+	<form method="POST" action="">
+		<input type="submit" value="Reset game">
+		<input type="hidden" name="reset_game" value="1"></input>
+	</form>
 </div>
 <?php
 include 'content/footer.php';

@@ -189,6 +189,5 @@ body {
     transition: background-color 0.2s;
 }
 .register form select {
-    margin-bottom: 20px;
-    padding: 0 15px;
+    margin-bottom: 40px;
 }
