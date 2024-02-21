@@ -37,11 +37,15 @@ $stmt->close();
 	<table>
 		<tr>
 			<td>Goals home:</td>
-			<td><?=$user_team['goal_account_home']?></td>
+			<td><?=$user_team['goal_account_home_1']+$user_team['goal_account_home_2']+$user_team['goal_account_home_3']?></td>
 		</tr>
 		<tr>
 			<td>Goals away:</td>
-			<td><?=$user_team['goal_account_away']?></td>
+			<td><?=$user_team['goal_account_away_1']+$user_team['goal_account_away_2']+$user_team['goal_account_away_3']?></td>
+		</tr>
+		<tr>
+			<td>Goals goal_account_overtime:</td>
+			<td><?=$user_team['goal_account_overtime']?></td>
 		</tr>
 	</table>
 </div>

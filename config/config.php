@@ -8,5 +8,6 @@ $DATABASE_NAME = '###';
 // app data
 $DOMAIN = 'yourdomain.com';
 $DOMAINPATH = 'https://' . $DOMAIN . '/pathtoapplication/';
-$MAX_GOALS_HOME = 90;
-$MAX_GOALS_AWAY = 70;
+$MAX_GOALS_HOME = 30;
+$MAX_GOALS_AWAY = 24;
+$Max_GOALS_OVERTIME = 30;
