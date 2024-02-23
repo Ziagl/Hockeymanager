@@ -23,12 +23,7 @@ if($user['team_id'] == 0) { ?>
 You are waiting for the approval for your team. Please come back later.
 <?php } else { 
 // user has a team
-$stmt = $con->prepare('SELECT * FROM Team WHERE id = ?');
-$stmt->bind_param('i', $user['team_id']);
-$stmt->execute();
-$result = $stmt->get_result();
-$user_team = $result->fetch_array();
-$stmt->close();
+$user_team = get_team_by_id($con, $user['team_id'])
 // show league table
 ?>
 , coach of <?=$user_team['name']?></p>
@@ -48,6 +43,102 @@ $stmt->close();
 			<td><?=$user_team['goal_account_overtime']?></td>
 		</tr>
 	</table>
+</div>
+<?php
+// get the leage of this use
+$stmt = $con->prepare('SELECT l.* FROM League l JOIN Team t ON t.league_id = l.id WHERE t.id = ?');
+$stmt->bind_param('i', $user['team_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$user_league = $result->fetch_array();
+$stmt->close();
+// get next matches
+$last_game_day = $user_league['last_game_day'] + 4;
+$stmt = $con->prepare('SELECT * FROM Game WHERE game_day <= ? AND (home_team_id = ? OR away_team_id = ?)');
+$stmt->bind_param('iii', $last_game_day, $user['team_id'], $user['team_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$games = array();
+while($game = $result->fetch_array())
+{
+	$games[] = $game;
+}
+$stmt->close();
+?>
+<div>
+	<p>Upcomming matches:</p>
+<?php
+foreach($games as $game)
+{
+	$home_team = get_team_by_id($con, $game['home_team_id']);
+	$away_team = get_team_by_id($con, $game['away_team_id']);
+	?>
+	<div class='game'>
+		<form method="POST" action="">
+		<table>
+			<tr>
+				<td></td>
+				<td><?=$home_team['name']?></td>
+				<td><?=$away_team['name']?></td>
+			</tr>
+			<tr>
+				<td>1. Period</td>
+				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
+						<input name='home_team_goal_1' value='<?=$game['home_team_goal_1']?>'></input>
+					<?php } else {?>
+						?
+					<?php }?></td>
+				<td><?php if($game['away_team_id'] == $user['team_id']) { ?>
+						<input name='away_team_goal_1' value='<?=$game['away_team_goal_1']?>'></input>
+					<?php } else {?>
+						?
+					<?php }?></td>
+			</tr>
+			<tr>
+				<td>2. Period</td>
+				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
+						<input name='home_team_goal_2' value='<?=$game['home_team_goal_2']?>'></input>
+					<?php } else {?>
+						?
+					<?php }?></td>
+				<td><?php if($game['away_team_id'] == $user['team_id']) { ?>
+						<input name='away_team_goal_2' value='<?=$game['away_team_goal_2']?>'></input>
+					<?php } else {?>
+						?
+					<?php }?></td>
+			</tr>
+			<tr>
+				<td>3. Period</td>
+				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
+						<input name='home_team_goal_3' value='<?=$game['home_team_goal_3']?>'></input>
+					<?php } else {?>
+						?
+					<?php }?></td>
+				<td><?php if($game['away_team_id'] == $user['team_id']) { ?>
+						<input name='away_team_goal_3' value='<?=$game['away_team_goal_3']?>'></input>
+					<?php } else {?>
+						?
+					<?php }?></td>
+			</tr>
+			<tr>
+				<td>Overtime</td>
+				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
+						<input name='home_team_goal_overtime' value='<?=$game['home_team_goal_overtime']?>'></input>
+					<?php } else {?>
+						?
+					<?php }?></td>
+				<td><?php if($game['away_team_id'] == $user['team_id']) { ?>
+						<input name='away_team_goal_overtime' value='<?=$game['away_team_goal_overtime']?>'></input>
+					<?php } else {?>
+						?
+					<?php }?></td>
+			</tr>
+		</table>
+		<input type='hidden' name='game_id' value='<?=$game['id']?>'></input>
+		</form>
+	</div>
+<?php }
+?>
 </div>
 <div>
 	<p>League table:</p>

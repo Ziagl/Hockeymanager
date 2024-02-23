@@ -7,6 +7,24 @@ if (mysqli_connect_errno()) {
 	exit('Failed to connect to MySQL: ' . mysqli_connect_error());
 }
 
+// gets a team from database by its id
+function get_team_by_id($con, $id)
+{
+    $stmt = $con->prepare('SELECT * FROM Team WHERE id = ?');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user_team = $result->fetch_array();
+    $stmt->close();
+
+    return $user_team;
+}
+
+function to_next_day($con)
+{
+    // update last_game_day of League
+}
+
 // initialize a new geam -> reset all values
 function initialize_game($con, $goal_account_home, $goal_account_away, $goal_account_overtime)
 {
@@ -106,6 +124,7 @@ function find_combinations($teams)
         $result[] = $game_day;
     }
 
+    shuffle($result);
     return $result;
 }
 
