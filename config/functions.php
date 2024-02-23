@@ -50,8 +50,11 @@ function initialize_game($con, $goal_account_home, $goal_account_away, $goal_acc
         $max_combinations = count($combinations);
         create_games($con, $combinations, 0);
         create_games($con, $inverted_combinations, $max_combinations);
-        create_games($con, $combinations, $max_combinations * 2);
-        create_games($con, $inverted_combinations, $max_combinations * 3);
+        if($max_combinations < 20)
+        {
+            create_games($con, $combinations, $max_combinations * 2);
+            create_games($con, $inverted_combinations, $max_combinations * 3);
+        }
     }
 }
 
