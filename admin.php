@@ -5,14 +5,18 @@ include 'content/session.php';
 // form response
 
 // change user team
-if(isset($_POST["team_id"]) && isset($_POST["user_id"])) {
+if(isset($_POST['team_id']) && isset($_POST['user_id'])) {
 	$stmt = $con->prepare('UPDATE User SET team_id = ? WHERE id = ?');
 	$stmt->bind_param('ii', $_POST['team_id'], $_POST['user_id']);
 	$stmt->execute();
 }
 // reset game
-if(isset($_POST["reset_game"])) {
+if(isset($_POST['reset_game'])) {
 	initialize_game($con, $MAX_GOALS_HOME, $MAX_GOALS_AWAY, $Max_GOALS_OVERTIME);
+}
+// next day
+if(isset($_POST['next_day'])) {
+	to_next_day($con);
 }
 
 // get data from database
@@ -76,6 +80,10 @@ include 'content/header.php';
 <?php } ?>
 	</table>
 	<p>Functions:</p>
+	<form method="POST" action="">
+		<input type="submit" value="Next day">
+		<input type="hidden" name="next_day" value="1"></input>
+	</form>
 	<form method="POST" action="">
 		<input type="submit" value="Reset game">
 		<input type="hidden" name="reset_game" value="1"></input>

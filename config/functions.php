@@ -33,14 +33,51 @@ function get_game_by_id($con, $id)
     return $game;
 }
 
+function get_game_day($con)
+{
+    $stmt = $con->prepare('SELECT * FROM State WHERE id = 1');
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $state = $result->fetch_array();
+    $stmt->close();
+
+    return $state;
+}
+
 function to_next_day($con)
 {
     // update last_game_day of League
+    $state = get_game_day($con);
+
+    $state['day'] = ((int)$state['day']) + 1;
+    if($state['day'] > 3) {
+        $state['day'] = 0;
+        $state['week'] = ((int)$state['week']) + 1;
+
+        $stmt = $con->prepare('UPDATE League SET last_game_day = last_game_day + 4 WHERE name <> "NHL"');
+        $stmt->execute();
+        $stmt = $con->prepare('UPDATE League SET last_game_day = last_game_day + 5 WHERE name = "NHL"');
+        $stmt->execute();
+    }
+
+    $stmt = $con->prepare('UPDATE State SET day = ?, week = ? WHERE id = 1');
+    $stmt->bind_param('ii', $state['day'], $state['week']);
+    $stmt->execute();
 }
 
 // initialize a new geam -> reset all values
 function initialize_game($con, $goal_account_home, $goal_account_away, $goal_account_overtime)
 {
+    // reset state
+    $stmt = $con->prepare('DELETE FROM State');
+    $stmt->execute();
+
+    $stmt = $con->prepare('TRUNCATE TABLE State');
+    $stmt->execute();
+
+    $stmt = $con->prepare('INSERT INTO State (day, week) VALUES (0, 0)');
+    $stmt->execute();
+
     // reset teams
     $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, lose = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ?');
 	$stmt->bind_param('iiiiiii', $goal_account_home, $goal_account_home, $goal_account_home, $goal_account_away, $goal_account_away, $goal_account_away, $goal_account_overtime);

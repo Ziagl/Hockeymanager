@@ -15,6 +15,9 @@ if($user['dream_team_id'] == 0) {
 }
 include 'content/header.php';
 
+// get game state
+$state = get_game_day($con);
+
 // form response
 
 // save game data
@@ -108,9 +111,11 @@ $result = $stmt->get_result();
 $user_league = $result->fetch_array();
 $stmt->close();
 // get next matches
-$last_game_day = $user_league['name'] == 'NHL' ? $user_league['last_game_day'] + 5 : $user_league['last_game_day'] + 4;
-$stmt = $con->prepare('SELECT * FROM Game WHERE game_day <= ? AND (home_team_id = ? OR away_team_id = ?)');
-$stmt->bind_param('iii', $last_game_day, $user['team_id'], $user['team_id']);
+$games_per_week = $user_league['name'] == 'NHL' ? 5 : 4;
+$last_game_day = $user_league['last_game_day'] + $games_per_week;
+$first_game_day = $last_game_day - $games_per_week;
+$stmt = $con->prepare('SELECT * FROM Game WHERE game_day <= ? AND game_day > ? AND (home_team_id = ? OR away_team_id = ?)');
+$stmt->bind_param('iiii', $last_game_day, $first_game_day, $user['team_id'], $user['team_id']);
 $stmt->execute();
 $result = $stmt->get_result();
 $games = array();
@@ -140,53 +145,77 @@ foreach($games as $game)
 				<td>1. Period</td>
 				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
 						<input name='home_team_goal_1' value='<?=$game['home_team_goal_1']?>'></input>
-					<?php } else {?>
-						?
-					<?php }?></td>
+					<?php } else {
+							if($state['day'] < 1) {?>
+								?
+					<?php } else { 
+								echo $game['home_team_goal_1'];
+						  } }?></td>
 				<td><?php if($game['away_team_id'] == $user['team_id']) { ?>
 						<input name='away_team_goal_1' value='<?=$game['away_team_goal_1']?>'></input>
-					<?php } else {?>
-						?
-					<?php }?></td>
+					<?php } else {
+							if($state['day'] < 1) {?>
+								?
+					<?php } else { 
+							echo $game['away_team_goal_1'];
+					  	  } }?></td>
 			</tr>
 			<tr>
 				<td>2. Period</td>
 				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
 						<input name='home_team_goal_2' value='<?=$game['home_team_goal_2']?>'></input>
-					<?php } else {?>
-						?
-					<?php }?></td>
+					<?php } else {
+							if($state['day'] < 2) {?>
+								?
+					<?php } else { 
+								echo $game['home_team_goal_2'];
+						  } }?></td>
 				<td><?php if($game['away_team_id'] == $user['team_id']) { ?>
 						<input name='away_team_goal_2' value='<?=$game['away_team_goal_2']?>'></input>
-					<?php } else {?>
-						?
-					<?php }?></td>
+					<?php } else {
+							if($state['day'] < 2) {?>
+								?
+					<?php } else { 
+							echo $game['away_team_goal_2'];
+					  	  } }?></td>
 			</tr>
 			<tr>
 				<td>3. Period</td>
 				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
 						<input name='home_team_goal_3' value='<?=$game['home_team_goal_3']?>'></input>
-					<?php } else {?>
-						?
-					<?php }?></td>
+					<?php } else {
+							if($state['day'] < 3) {?>
+								?
+					<?php } else { 
+								echo $game['home_team_goal_3'];
+						  } }?></td>
 				<td><?php if($game['away_team_id'] == $user['team_id']) { ?>
 						<input name='away_team_goal_3' value='<?=$game['away_team_goal_3']?>'></input>
-					<?php } else {?>
-						?
-					<?php }?></td>
+					<?php } else {
+							if($state['day'] < 3) {?>
+								?
+					<?php } else { 
+							echo $game['away_team_goal_3'];
+					  	  } }?></td>
 			</tr>
 			<tr>
 				<td>Overtime</td>
 				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
 						<input name='home_team_goal_overtime' value='<?=$game['home_team_goal_overtime']?>'></input>
-					<?php } else {?>
-						?
-					<?php }?></td>
+					<?php } else {
+							if($state['day'] < 3) {?>
+								?
+					<?php } else { 
+								echo $game['home_team_goal_overtime'];
+						  } }?></td>
 				<td><?php if($game['away_team_id'] == $user['team_id']) { ?>
 						<input name='away_team_goal_overtime' value='<?=$game['away_team_goal_overtime']?>'></input>
-					<?php } else {?>
-						?
-					<?php }?></td>
+					<?php } else {
+							if($state['day'] < 3) {?>
+								?
+					<?php } else { 
+							echo $game['away_team_goal_overtime'];
+					  	  } }?></td>
 			</tr>
 		</table>
 		<input type='submit' value='Save'></input>
