@@ -14,6 +14,61 @@ if($user['dream_team_id'] == 0) {
 	exit;
 }
 include 'content/header.php';
+
+// form response
+
+// save game data
+if(isset($_POST['game_id'])) {
+	$user_team = get_team_by_id($con, $user['team_id']);
+	$game_day = get_game_by_id($con, $_POST['game_id']);
+	$gah = array($user_team['goal_account_home_1'], $user_team['goal_account_home_2'], $user_team['goal_account_home_3']);
+	$gaa = array($user_team['goal_account_away_1'], $user_team['goal_account_away_2'], $user_team['goal_account_away_3']);
+	$gao = $user_team['goal_account_overtime'];
+
+	$statement = 'UPDATE Game SET';
+	$periods = array('1', '2', '3');
+	foreach($periods as $period) {
+		if(isset($_POST['home_team_goal_'.$period])) {
+			$statement.= ' home_team_goal_'.$period.' = '.$_POST['home_team_goal_'.$period].',';
+			$diff = $_POST['home_team_goal_'.$period] - $game_day['home_team_goal_'.$period];
+			$gah[((int)$period) - 1] = $gah[((int)$period) - 1] - $diff;
+		}
+		if(isset($_POST['away_team_goal_'.$period])) {
+			$statement.= ' away_team_goal_'.$period.' = '.$_POST['away_team_goal_'.$period].',';
+			$diff = $_POST['away_team_goal_'.$period] - $game_day['away_team_goal_'.$period];
+			$gaa[((int)$period) - 1] = $gaa[((int)$period) - 1] - $diff;
+		}
+	}
+	if(isset($_POST['home_team_goal_overtime'])) {
+		$statement.= ' home_team_goal_overtime = '.$_POST['home_team_goal_overtime'].',';
+		$diff = $_POST['home_team_goal_overtime'] - $game_day['home_team_goal_overtime'];
+		$gao = $gao - $diff;
+	}
+	if(isset($_POST['away_team_goal_overtime'])) {
+		$statement.= ' away_team_goal_overtime = '.$_POST['away_team_goal_overtime'].',';
+		$diff = $_POST['away_team_goal_overtime'] - $game_day['away_team_goal_overtime'];
+		$gao = $gao - $diff;
+	}
+
+	if($gah[0] > 0 && $gah[1] > 0 && $gah[2] > 0 &&
+	   $gaa[0] > 0 && $gaa[1] > 0 && $gaa[2] > 0 &&
+	   $gao > 0)
+	{
+		$statement = rtrim($statement, ",");
+		$statement.= ' WHERE id = ?';
+		$stmt = $con->prepare($statement);
+		$stmt->bind_param('i', $_POST['game_id']);
+		$stmt->execute();
+
+		$stmt = $con->prepare('UPDATE Team SET goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ? ');
+		$stmt->bind_param('iiiiiii', $gah[0], $gah[1], $gah[2], $gaa[0], $gaa[1], $gaa[2], $gao);
+		$stmt->execute();
+	}
+	else
+	{
+		echo "Invalid input.";
+	}
+}
 ?>
 <h2>Home Page</h2>
 <p>Welcome back, <?=$_SESSION['name']?>
@@ -23,7 +78,7 @@ if($user['team_id'] == 0) { ?>
 You are waiting for the approval for your team. Please come back later.
 <?php } else { 
 // user has a team
-$user_team = get_team_by_id($con, $user['team_id'])
+$user_team = get_team_by_id($con, $user['team_id']);
 // show league table
 ?>
 , coach of <?=$user_team['name']?></p>
@@ -32,11 +87,11 @@ $user_team = get_team_by_id($con, $user['team_id'])
 	<table>
 		<tr>
 			<td>Goals home:</td>
-			<td><?=$user_team['goal_account_home_1']+$user_team['goal_account_home_2']+$user_team['goal_account_home_3']?></td>
+			<td><?=$user_team['goal_account_home_1']+$user_team['goal_account_home_2']+$user_team['goal_account_home_3']?> (<?=$user_team['goal_account_home_1']?>, <?=$user_team['goal_account_home_2']?>, <?=$user_team['goal_account_home_3']?>)</td>
 		</tr>
 		<tr>
 			<td>Goals away:</td>
-			<td><?=$user_team['goal_account_away_1']+$user_team['goal_account_away_2']+$user_team['goal_account_away_3']?></td>
+			<td><?=$user_team['goal_account_away_1']+$user_team['goal_account_away_2']+$user_team['goal_account_away_3']?> (<?=$user_team['goal_account_away_1']?>, <?=$user_team['goal_account_away_2']?>, <?=$user_team['goal_account_away_3']?>)</td>
 		</tr>
 		<tr>
 			<td>Goals goal_account_overtime:</td>
@@ -53,7 +108,7 @@ $result = $stmt->get_result();
 $user_league = $result->fetch_array();
 $stmt->close();
 // get next matches
-$last_game_day = $user_league['last_game_day'] + 4;
+$last_game_day = $user_league['name'] == 'NHL' ? $user_league['last_game_day'] + 5 : $user_league['last_game_day'] + 4;
 $stmt = $con->prepare('SELECT * FROM Game WHERE game_day <= ? AND (home_team_id = ? OR away_team_id = ?)');
 $stmt->bind_param('iii', $last_game_day, $user['team_id'], $user['team_id']);
 $stmt->execute();
@@ -134,6 +189,7 @@ foreach($games as $game)
 					<?php }?></td>
 			</tr>
 		</table>
+		<input type='submit' value='Save'></input>
 		<input type='hidden' name='game_id' value='<?=$game['id']?>'></input>
 		</form>
 	</div>

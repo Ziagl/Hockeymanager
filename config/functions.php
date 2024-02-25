@@ -7,7 +7,7 @@ if (mysqli_connect_errno()) {
 	exit('Failed to connect to MySQL: ' . mysqli_connect_error());
 }
 
-// gets a team from database by its id
+// gets a team from database by id
 function get_team_by_id($con, $id)
 {
     $stmt = $con->prepare('SELECT * FROM Team WHERE id = ?');
@@ -18,6 +18,19 @@ function get_team_by_id($con, $id)
     $stmt->close();
 
     return $user_team;
+}
+
+// gets a game from database by id
+function get_game_by_id($con, $id)
+{
+    $stmt = $con->prepare('SELECT * FROM Game WHERE id = ?');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $game = $result->fetch_array();
+    $stmt->close();
+
+    return $game;
 }
 
 function to_next_day($con)
