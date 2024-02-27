@@ -50,6 +50,21 @@ function get_game_by_id($con, $id)
     return $game;
 }
 
+function get_games_by_league($con, $league)
+{
+    $stmt = $con->prepare('SELECT g.*, thome.name as "home", taway.name as "away", l.last_game_day FROM Game g JOIN Team thome ON thome.id = g.home_team_id JOIN Team taway ON taway.id = g.away_team_id JOIN League l ON thome.league_id = l.id WHERE l.id = ? ORDER BY g.game_day ASC');
+    $stmt->bind_param('i', $league['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $games = array();
+    while($game = $result->fetch_array()){
+        $games[$game['game_day']][] = $game;
+    }
+    $stmt->close();
+
+    return $games;
+}
+
 function get_game_day($con)
 {
     $stmt = $con->prepare('SELECT * FROM State WHERE id = 1');

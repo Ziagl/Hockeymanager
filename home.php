@@ -247,19 +247,67 @@ $stmt->close();
 $index = 0;
 foreach($teams as $team) {
 	?>
-	<tr>
-		<td><?=++$index?></td>
-		<td><?=$team['name']?></td>
-		<td><?=$team['win']?></td>
-		<td><?=$team['draw']?></td>
-		<td><?=$team['lose']?></td>
-		<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
-		<td><?=$team['points']?></td>
-	</tr>
+		<tr>
+			<td><?=++$index?></td>
+			<td><?=$team['name']?></td>
+			<td><?=$team['win']?></td>
+			<td><?=$team['draw']?></td>
+			<td><?=$team['lose']?></td>
+			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
+			<td><?=$team['points']?></td>
+		</tr>
 <?php
 }
 ?>
-</table>
+	</table>
+</div>
+<div>
+	<p><?=$translator->__('Game schedule',$language)?>:</p>
+	<?php
+		$games = get_games_by_league($con, $user_league);
+		foreach($games as $game_day) {
+	?>
+	<p><?=$translator->__('Game day',$language)?> <?=$game_day[0]['game_day']?></p>
+	<table>
+		<tr>
+			<th>#</th>
+			<th>Team</th>
+			<th><?=$translator->__('P1',$language)?></th>
+			<th><?=$translator->__('P2',$language)?></th>
+			<th><?=$translator->__('P3',$language)?></th>
+			<th><?=$translator->__('Ot',$language)?></th>
+			<th></th>
+			<th><?=$translator->__('P1',$language)?></th>
+			<th><?=$translator->__('P2',$language)?></th>
+			<th><?=$translator->__('P3',$language)?></th>
+			<th><?=$translator->__('Ot',$language)?></th>
+			<th>Team</th>
+		</tr>
+	<?php
+		$index = 0;
+		foreach($game_day as $game) {
+			$index++;
+			$home_goals = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'];
+			$away_goals = $game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'];
+	?>
+		<tr>
+			<td><?=$index?></td>
+			<td><?=$game['home']?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'];?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'];?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'];?></td>
+			<td><?php if($home_goals == $away_goals && $game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_overtime'];?></td>
+			<td>:</td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['away_team_goal_1'];?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['away_team_goal_2'];?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['away_team_goal_3'];?></td>
+			<td><?php if($home_goals == $away_goals && $game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_overtime'];?></td>
+			<td><?=$game['away']?></td>
+		</tr>
+	<?php } ?>
+	</table>
+	<?php } ?>
+</div>
 <?php
 }
 include 'content/footer.php';
