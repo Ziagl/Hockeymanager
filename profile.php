@@ -13,16 +13,16 @@ $stmt->close();
 
 include 'content/header.php';
 ?>
-<h2>Profile Page</h2>
+<h2><?=$translator->__('Profile Page',$language)?></h2>
 <div>
-	<p>Your account details are below:</p>
+	<p><?=$translator->__('Your account details are below',$language)?>:</p>
 	<table>
 		<tr>
-			<td>Username:</td>
+			<td><?=$translator->__('Username',$language)?>:</td>
 			<td><?=$_SESSION['name']?></td>
 		</tr>
 		<tr>
-			<td>Password:</td>
+			<td><?=$translator->__('Password',$language)?>:</td>
 			<td><?=$password?></td>
 		</tr>
 		<tr>
@@ -31,7 +31,7 @@ include 'content/header.php';
 		</tr>
 <?php if($_SESSION['admin'] > 0) {?>
 		<tr>
-			<td>Admin:</td>
+			<td><?=$translator->__('Admin',$language)?>:</td>
 			<td><i class="fas fa-check-circle"></i></td>
 		</tr>
 <?php } ?>

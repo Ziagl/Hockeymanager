@@ -73,31 +73,31 @@ if(isset($_POST['game_id'])) {
 	}
 }
 ?>
-<h2>Home Page</h2>
-<p>Welcome back, <?=$_SESSION['name']?>
+<h2>Dashboard</h2>
+<p><?=$translator->__('Welcome back',$language)?>, <?=$_SESSION['name']?>
 <?php // user has set dream team but has no team yet
 if($user['team_id'] == 0) { ?>
 !</p>
-You are waiting for the approval for your team. Please come back later.
+<?=$translator->__('You are waiting for the approval for your team. Please come back later.',$language)?>
 <?php } else { 
 // user has a team
 $user_team = get_team_by_id($con, $user['team_id']);
 // show league table
 ?>
-, coach of <?=$user_team['name']?></p>
+, <?=$translator->__('coach of',$language)?> <?=$user_team['name']?></p>
 <div>
-	<p>Goal stats:</p>
+	<p><?=$translator->__('Goal stats',$language)?>:</p>
 	<table>
 		<tr>
-			<td>Goals home:</td>
+			<td><?=$translator->__('Goals home',$language)?>:</td>
 			<td><?=$user_team['goal_account_home_1']+$user_team['goal_account_home_2']+$user_team['goal_account_home_3']?> (<?=$user_team['goal_account_home_1']?>, <?=$user_team['goal_account_home_2']?>, <?=$user_team['goal_account_home_3']?>)</td>
 		</tr>
 		<tr>
-			<td>Goals away:</td>
+			<td><?=$translator->__('Goals away',$language)?>:</td>
 			<td><?=$user_team['goal_account_away_1']+$user_team['goal_account_away_2']+$user_team['goal_account_away_3']?> (<?=$user_team['goal_account_away_1']?>, <?=$user_team['goal_account_away_2']?>, <?=$user_team['goal_account_away_3']?>)</td>
 		</tr>
 		<tr>
-			<td>Goals goal_account_overtime:</td>
+			<td><?=$translator->__('Goals overtime',$language)?>:</td>
 			<td><?=$user_team['goal_account_overtime']?></td>
 		</tr>
 	</table>
@@ -121,7 +121,7 @@ while($game = $result->fetch_array())
 $stmt->close();
 ?>
 <div>
-	<p>Upcomming matches:</p>
+	<p><?=$translator->__('Upcoming matches',$language)?>:</p>
 <?php
 foreach($games as $game)
 {
@@ -137,7 +137,7 @@ foreach($games as $game)
 				<td><?=$away_team['name']?></td>
 			</tr>
 			<tr>
-				<td>1. Period</td>
+				<td>1. <?=$translator->__('Period',$language)?></td>
 				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
 						<input name='home_team_goal_1' value='<?=$game['home_team_goal_1']?>'></input>
 					<?php } else {
@@ -156,7 +156,7 @@ foreach($games as $game)
 					  	  } }?></td>
 			</tr>
 			<tr>
-				<td>2. Period</td>
+				<td>2. <?=$translator->__('Period',$language)?></td>
 				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
 						<input name='home_team_goal_2' value='<?=$game['home_team_goal_2']?>'></input>
 					<?php } else {
@@ -175,7 +175,7 @@ foreach($games as $game)
 					  	  } }?></td>
 			</tr>
 			<tr>
-				<td>3. Period</td>
+				<td>3. <?=$translator->__('Period',$language)?></td>
 				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
 						<input name='home_team_goal_3' value='<?=$game['home_team_goal_3']?>'></input>
 					<?php } else {
@@ -194,7 +194,7 @@ foreach($games as $game)
 					  	  } }?></td>
 			</tr>
 			<tr>
-				<td>Overtime</td>
+				<td><?=$translator->__('Overtime',$language)?></td>
 				<td><?php if($game['home_team_id'] == $user['team_id']) { ?>
 						<input name='home_team_goal_overtime' value='<?=$game['home_team_goal_overtime']?>'></input>
 					<?php } else {
@@ -213,27 +213,29 @@ foreach($games as $game)
 					  	  } }?></td>
 			</tr>
 		</table>
-		<input type='submit' value='Save'></input>
+		<?php if($state['day'] == 0) { ?>
+		<input type='submit' value='<?=$translator->__('Save',$language)?>'></input>
 		<input type='hidden' name='game_id' value='<?=$game['id']?>'></input>
+		<?php } ?>
 		</form>
 	</div>
 <?php }
 ?>
 </div>
 <div>
-	<p>League table:</p>
+	<p><?=$translator->__('League table',$language)?>:</p>
 	<table>
 		<tr>
 			<th>#</th>
-			<th>Name</th>
-			<th>Win</th>
-			<th>Draw</th>
-			<th>Lose</th>
-			<th>Goals</th>
-			<th>Points</th>
+			<th><?=$translator->__('Name',$language)?></th>
+			<th><?=$translator->__('Win',$language)?></th>
+			<th><?=$translator->__('Draw',$language)?></th>
+			<th><?=$translator->__('Lose',$language)?></th>
+			<th><?=$translator->__('Goals',$language)?></th>
+			<th><?=$translator->__('Points',$language)?></th>
 		</tr>
 <?php
-$stmt = $con->prepare('select * from Team where league_id like (select l.id from League l, Team t where l.id = t.league_id and t.id = ?) order by points desc;');
+$stmt = $con->prepare('SELECT * FROM Team WHERE league_id LIKE (SELECT l.id FROM League l, Team t WHERE l.id = t.league_id AND t.id = ?) ORDER BY points DESC;');
 $stmt->bind_param('i', $user['team_id']);
 $stmt->execute();
 $result = $stmt->get_result();

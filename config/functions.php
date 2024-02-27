@@ -1,11 +1,15 @@
 <?php
 include_once 'config.php';
+include_once 'Translator.php';
 
 $con = mysqli_connect($DATABASE_HOST, $DATABASE_USER, $DATABASE_PASS, $DATABASE_NAME);
 $con->set_charset("utf8");
 if (mysqli_connect_errno()) {
 	exit('Failed to connect to MySQL: ' . mysqli_connect_error());
 }
+
+$translator = new Translator();
+$language = 'de';
 
 // gets a team from database by id
 function get_team_by_id($con, $id)
@@ -182,8 +186,6 @@ function update_stats($con, $week)
             $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, lose = lose + ?, draw = draw + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
             $stmt->bind_param('iiiiiii', $away_points, $away_win, $away_lose, $draw, $goals_away, $goals_home, $game['away_team_id']);
             $stmt->execute();
-
-            
         }
     }
 }

@@ -41,17 +41,29 @@ $stmt->close();
 
 include 'content/header.php';
 ?>
-<h2>Admin Page</h2>
+<h2><?=$translator->__('Admin Page',$language)?></h2>
 <div>
-	<p>Registered users:</p>
+	<p><?=$translator->__('Functions',$language)?>:</p>
+	<form method="POST" action="">
+		<input type="submit" value="<?=$translator->__('Next day',$language)?>">
+		<input type="hidden" name="next_day" value="1"></input>
+	</form>
+	<p></p>
+	<form method="POST" action="">
+		<input type="submit" value="<?=$translator->__('Reset game',$language)?>">
+		<input type="hidden" name="reset_game" value="1"></input>
+	</form>
+</div>
+<div>
+	<p><?=$translator->__('Registered users',$language)?>:</p>
 	<table>
 		<tr>
-			<th>Username</th>
+			<th><?=$translator->__('Username',$language)?></th>
 			<th>Email</th>
-			<th>Activation</th>
+			<th><?=$translator->__('Activation',$language)?></th>
 			<th>Team</th>
-			<th>Dream Team</th>
-			<th>Admin</th>
+			<th><?=$translator->__('Dream Team',$language)?></th>
+			<th><?=$translator->__('Admin',$language)?></th>
 		</tr>
 <?php foreach ($users as $user) { ?>
 		<tr>
@@ -79,15 +91,6 @@ include 'content/header.php';
 		</tr>
 <?php } ?>
 	</table>
-	<p>Functions:</p>
-	<form method="POST" action="">
-		<input type="submit" value="Next day">
-		<input type="hidden" name="next_day" value="1"></input>
-	</form>
-	<form method="POST" action="">
-		<input type="submit" value="Reset game">
-		<input type="hidden" name="reset_game" value="1"></input>
-	</form>
 </div>
 <?php
 include 'content/footer.php';
