@@ -104,12 +104,7 @@ $user_team = get_team_by_id($con, $user['team_id']);
 </div>
 <?php
 // get the leage of this use
-$stmt = $con->prepare('SELECT l.* FROM League l JOIN Team t ON t.league_id = l.id WHERE t.id = ?');
-$stmt->bind_param('i', $user['team_id']);
-$stmt->execute();
-$result = $stmt->get_result();
-$user_league = $result->fetch_array();
-$stmt->close();
+$user_league = get_league_by_id($con, $user['team_id']);
 // get next matches
 $games_per_week = $user_league['name'] == 'NHL' ? 5 : 4;
 $last_game_day = $user_league['last_game_day'] + $games_per_week;
@@ -232,6 +227,7 @@ foreach($games as $game)
 			<th>#</th>
 			<th>Name</th>
 			<th>Win</th>
+			<th>Draw</th>
 			<th>Lose</th>
 			<th>Goals</th>
 			<th>Points</th>
@@ -253,6 +249,7 @@ foreach($teams as $team) {
 		<td><?=++$index?></td>
 		<td><?=$team['name']?></td>
 		<td><?=$team['win']?></td>
+		<td><?=$team['draw']?></td>
 		<td><?=$team['lose']?></td>
 		<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
 		<td><?=$team['points']?></td>

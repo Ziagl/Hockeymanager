@@ -20,6 +20,19 @@ function get_team_by_id($con, $id)
     return $user_team;
 }
 
+// gets a league from database by id
+function get_league_by_id($con, $id)
+{
+    $stmt = $con->prepare('SELECT l.* FROM League l JOIN Team t ON t.league_id = l.id WHERE t.id = ?');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $league = $result->fetch_array();
+    $stmt->close();
+
+    return $league;
+}
+
 // gets a game from database by id
 function get_game_by_id($con, $id)
 {
@@ -44,6 +57,26 @@ function get_game_day($con)
     return $state;
 }
 
+function get_games_of_week($con, $league)
+{
+    $games_per_week = $league['name'] == 'NHL' ? 5 : 4;
+    $last_game_day = $league['last_game_day'] + $games_per_week;
+    $first_game_day = $league['last_game_day'];
+    $stmt = $con->prepare('SELECT g.* FROM Game g JOIN Team t ON t.id = g.home_team_id JOIN League l ON l.id = t.league_id WHERE game_day <= ? AND game_day > ? AND l.id = ?');
+    $stmt->bind_param('iii', $last_game_day, $first_game_day, $league['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $games = array();
+    while($game = $result->fetch_array())
+    {
+        $games[] = $game;
+    }
+    $stmt->close();
+
+    return $games;
+}
+
+// proceed to next game day
 function to_next_day($con)
 {
     // update last_game_day of League
@@ -53,6 +86,8 @@ function to_next_day($con)
     if($state['day'] > 3) {
         $state['day'] = 0;
         $state['week'] = ((int)$state['week']) + 1;
+        
+        update_stats($con, $state['week']);
 
         $stmt = $con->prepare('UPDATE League SET last_game_day = last_game_day + 4 WHERE name <> "NHL"');
         $stmt->execute();
@@ -63,6 +98,94 @@ function to_next_day($con)
     $stmt = $con->prepare('UPDATE State SET day = ?, week = ? WHERE id = 1');
     $stmt->bind_param('ii', $state['day'], $state['week']);
     $stmt->execute();
+}
+
+// get values from last week into team stats
+function update_stats($con, $week)
+{
+    // get all leagues
+    $stmt = $con->prepare('SELECT * FROM League');
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $leagues = array();
+    while($league = $result->fetch_array()) {
+        $leagues[] = $league;
+    }
+    $stmt->close();
+
+    // calculate stats for each league
+    foreach($leagues as $league) {
+        $games = get_games_of_week($con, $league);
+        foreach($games as $game) {
+            // home team
+            $goals_home = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'];
+            $overtime_home = $game['home_team_goal_overtime'];
+            // away team
+            $goals_away = $game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'];
+            $overtime_away = $game['away_team_goal_overtime'];
+
+            $home_win = $goals_home > $goals_away ? 1 : 0;
+            $away_win = $goals_away > $goals_home ? 1 : 0;
+            $home_lose = $goals_home < $goals_away ? 1 : 0;
+            $away_lose = $goals_away < $goals_home ? 1 : 0;
+            $draw = $home_lose == 0 && $away_lose == 0 ? 1 : 0;
+
+            $home_points = 1;
+            $away_points = 1;
+            if($home_win == 1) {
+                $home_points = 3;
+                $away_points = 0;
+            }
+            if($away_win == 1) {
+                $home_points = 0;
+                $away_points = 3;
+            }
+
+            // if it is draw after 3 periods -> use overtime goals
+            if($draw)
+            {
+                $home_win = $overtime_home > $overtime_away ? 1 : 0;
+                $away_win = $overtime_away > $overtime_home ? 1 : 0;
+                $home_lose = $overtime_home < $overtime_away ? 1 : 0;
+                $away_lose = $overtime_away < $overtime_home ? 1 : 0;
+                $draw = $home_lose == 0 && $away_lose == 0 ? 1 : 0;
+
+                $home_points = 1;
+                $away_points = 1;
+                if($home_win == 1) {
+                    $home_points = 2;
+                    $away_points = 0;
+                }
+                if($away_win == 1) {
+                    $home_points = 0;
+                    $away_points = 2;
+                }
+            } 
+            // no overtime -> restore used overtime goals
+            else {
+                if($overtime_home > 0) {
+                    $stmt = $con->prepare('UPDATE Team SET goal_account_overtime = goal_account_overtime + ? WHERE id = ?');
+                    $stmt->bind_param('ii', $overtime_home, $game['home_team_id']);
+                    $stmt->execute();
+                }
+                if($overtime_away > 0) {
+                    $stmt = $con->prepare('UPDATE Team SET goal_account_overtime = goal_account_overtime + ? WHERE id = ?');
+                    $stmt->bind_param('ii', $overtime_away, $game['away_team_id']);
+                    $stmt->execute();
+                }
+            }
+
+            $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, lose = lose + ?, draw = draw + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
+            $stmt->bind_param('iiiiiii', $home_points, $home_win, $home_lose, $draw, $goals_home, $goals_away, $game['home_team_id']);
+            $stmt->execute();
+
+            $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, lose = lose + ?, draw = draw + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
+            $stmt->bind_param('iiiiiii', $away_points, $away_win, $away_lose, $draw, $goals_away, $goals_home, $game['away_team_id']);
+            $stmt->execute();
+
+            
+        }
+    }
 }
 
 // initialize a new geam -> reset all values
@@ -79,8 +202,12 @@ function initialize_game($con, $goal_account_home, $goal_account_away, $goal_acc
     $stmt->execute();
 
     // reset teams
-    $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, lose = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ?');
+    $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, lose = 0, draw = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ?');
 	$stmt->bind_param('iiiiiii', $goal_account_home, $goal_account_home, $goal_account_home, $goal_account_away, $goal_account_away, $goal_account_away, $goal_account_overtime);
+	$stmt->execute();
+
+    // reset league
+    $stmt = $con->prepare('UPDATE League SET last_game_day = 0');
 	$stmt->execute();
 
     // reset games
