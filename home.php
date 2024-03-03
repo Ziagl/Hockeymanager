@@ -235,15 +235,7 @@ foreach($games as $game)
 			<th><?=$translator->__('Points',$language)?></th>
 		</tr>
 <?php
-$stmt = $con->prepare('SELECT * FROM Team WHERE league_id LIKE (SELECT l.id FROM League l, Team t WHERE l.id = t.league_id AND t.id = ?) ORDER BY points DESC;');
-$stmt->bind_param('i', $user['team_id']);
-$stmt->execute();
-$result = $stmt->get_result();
-while($team = $result->fetch_array())
-{
-	$teams[] = $team;
-}
-$stmt->close();
+$teams = get_team_by_points($con, $user['team_id']);
 $index = 0;
 foreach($teams as $team) {
 	?>

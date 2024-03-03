@@ -24,6 +24,22 @@ function get_team_by_id($con, $id)
     return $user_team;
 }
 
+function get_team_by_points($con, $id)
+{
+    $stmt = $con->prepare('SELECT * FROM Team WHERE league_id LIKE (SELECT l.id FROM League l, Team t WHERE l.id = t.league_id AND t.id = ?) ORDER BY points DESC, win DESC');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $teams = array();
+    while($team = $result->fetch_array())
+    {
+        $teams[] = $team;
+    }
+    $stmt->close();
+
+    return $teams;
+}
+
 // gets a league from database by id
 function get_league_by_id($con, $id)
 {
