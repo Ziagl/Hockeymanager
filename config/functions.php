@@ -53,6 +53,20 @@ function get_league_by_id($con, $id)
     return $league;
 }
 
+function get_all_leagues($con)
+{
+    $stmt = $con->prepare('SELECT * FROM League');
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $leagues = array();
+    while($league = $result->fetch_array()) {
+        $leagues[] = $league;
+    }
+    $stmt->close();
+
+    return $leagues;
+}
+
 // gets a game from database by id
 function get_game_by_id($con, $id)
 {
@@ -117,6 +131,10 @@ function to_next_day($con)
     // update last_game_day of League
     $state = get_game_day($con);
 
+    if($state['day'] == 0) {
+        team_ai($con, $state);
+    }
+
     $state['day'] = ((int)$state['day']) + 1;
     if($state['day'] > 3) {
         $state['day'] = 0;
@@ -126,27 +144,85 @@ function to_next_day($con)
 
         $stmt = $con->prepare('UPDATE League SET last_game_day = last_game_day + 4 WHERE name <> "NHL"');
         $stmt->execute();
+        $stmt->close();
         $stmt = $con->prepare('UPDATE League SET last_game_day = last_game_day + 5 WHERE name = "NHL"');
         $stmt->execute();
+        $stmt->close();
     }
 
     $stmt = $con->prepare('UPDATE State SET day = ?, week = ? WHERE id = 1');
     $stmt->bind_param('ii', $state['day'], $state['week']);
     $stmt->execute();
+    $stmt->close();
+}
+
+// check if given team is not controlled by user
+function is_ai_team($con, $team_id)
+{
+    $stmt = $con->prepare('SELECT * FROM User WHERE team_id = ?');
+    $stmt->bind_param('i', $team_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $is_ai_team = true;
+    if($result->fetch_array()) {
+        $is_ai_team = false;
+    }
+    $stmt->close();
+
+    return $is_ai_team;
+}
+
+function get_random_goals()
+{
+    $goals = array();
+
+    for($i=0; $i<4; ++$i) {
+        $random_value = random_int(0, 99);
+        if ($random_value >= 50 && $random_value < 80) {
+            $goals[] = 1;
+        } else if ($random_value >= 80 && $random_value < 95) {
+            $goals[] = 2;
+        } else if ($random_value >= 95) {
+            $goals[] = 3;
+        } else {
+            $goals[] = 0;
+        }
+    }
+
+    return $goals;
+}
+
+// team ai that automatically sets goals
+function team_ai($con, $state)
+{
+    $leagues = get_all_leagues($con);
+
+    foreach($leagues as $league) {
+        $games = get_games_of_week($con, $league);
+        foreach($games as $game) {
+            if(is_ai_team($con, $game['home_team_id'])) {
+                $goals = get_random_goals();
+                $stmt = $con->prepare('UPDATE Game SET home_team_goal_1 = ?, home_team_goal_2 = ?, home_team_goal_3 = ?, home_team_goal_overtime = ? WHERE id = ?');
+                $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $game['id']);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            if(is_ai_team($con, $game['away_team_id'])) {
+                $goals = get_random_goals();
+                $stmt = $con->prepare('UPDATE Game SET away_team_goal_1 = ?, away_team_goal_2 = ?, away_team_goal_3 = ?, away_team_goal_overtime = ? WHERE id = ?');
+                $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $game['id']);
+                $stmt->execute();
+                $stmt->close();
+            }
+        }
+    }
 }
 
 // get values from last week into team stats
 function update_stats($con, $week)
 {
-    // get all leagues
-    $stmt = $con->prepare('SELECT * FROM League');
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $leagues = array();
-    while($league = $result->fetch_array()) {
-        $leagues[] = $league;
-    }
-    $stmt->close();
+    $leagues = get_all_leagues($con);
 
     // calculate stats for each league
     foreach($leagues as $league) {
@@ -202,21 +278,25 @@ function update_stats($con, $week)
                     $stmt = $con->prepare('UPDATE Team SET goal_account_overtime = goal_account_overtime + ? WHERE id = ?');
                     $stmt->bind_param('ii', $overtime_home, $game['home_team_id']);
                     $stmt->execute();
+                    $stmt->close();
                 }
                 if($overtime_away > 0) {
                     $stmt = $con->prepare('UPDATE Team SET goal_account_overtime = goal_account_overtime + ? WHERE id = ?');
                     $stmt->bind_param('ii', $overtime_away, $game['away_team_id']);
                     $stmt->execute();
+                    $stmt->close();
                 }
             }
 
             $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, lose = lose + ?, draw = draw + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
             $stmt->bind_param('iiiiiii', $home_points, $home_win, $home_lose, $draw, $goals_home, $goals_away, $game['home_team_id']);
             $stmt->execute();
+            $stmt->close();
 
             $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, lose = lose + ?, draw = draw + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
             $stmt->bind_param('iiiiiii', $away_points, $away_win, $away_lose, $draw, $goals_away, $goals_home, $game['away_team_id']);
             $stmt->execute();
+            $stmt->close();
         }
     }
 }
@@ -227,25 +307,31 @@ function initialize_game($con, $goal_account_home, $goal_account_away, $goal_acc
     // reset state
     $stmt = $con->prepare('DELETE FROM State');
     $stmt->execute();
+    $stmt->close();
 
     $stmt = $con->prepare('TRUNCATE TABLE State');
     $stmt->execute();
+    $stmt->close();
 
     $stmt = $con->prepare('INSERT INTO State (day, week) VALUES (0, 0)');
     $stmt->execute();
+    $stmt->close();
 
     // reset teams
     $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, lose = 0, draw = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ?');
 	$stmt->bind_param('iiiiiii', $goal_account_home, $goal_account_home, $goal_account_home, $goal_account_away, $goal_account_away, $goal_account_away, $goal_account_overtime);
 	$stmt->execute();
+    $stmt->close();
 
     // reset league
     $stmt = $con->prepare('UPDATE League SET last_game_day = 0');
 	$stmt->execute();
+    $stmt->close();
 
     // reset games
     $stmt = $con->prepare('TRUNCATE TABLE Game');
     $stmt->execute();
+    $stmt->close();
 
     // create calendar
     // 1. get all leagues
@@ -297,6 +383,7 @@ function create_games($con, $combinations, $last_game_day)
             $stmt = $con->prepare('INSERT INTO Game (game_day, home_team_id, away_team_id) VALUES (?, ?, ?)');
             $stmt->bind_param('iii', $last_game_day, $game[0], $game[1]);
             $stmt->execute();
+            $stmt->close();
         }
     }
 }

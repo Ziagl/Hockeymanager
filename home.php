@@ -264,16 +264,12 @@ foreach($teams as $team) {
 		<tr>
 			<th>#</th>
 			<th>Team</th>
-			<th><?=$translator->__('P1',$language)?></th>
-			<th><?=$translator->__('P2',$language)?></th>
-			<th><?=$translator->__('P3',$language)?></th>
-			<th><?=$translator->__('Ot',$language)?></th>
-			<th></th>
-			<th><?=$translator->__('P1',$language)?></th>
-			<th><?=$translator->__('P2',$language)?></th>
-			<th><?=$translator->__('P3',$language)?></th>
-			<th><?=$translator->__('Ot',$language)?></th>
 			<th>Team</th>
+			<th><?=$translator->__('Result',$language)?></th>
+			<th><?=$translator->__('P1',$language)?></th>
+			<th><?=$translator->__('P2',$language)?></th>
+			<th><?=$translator->__('P3',$language)?></th>
+			<th><?=$translator->__('Ot',$language)?></th>
 		</tr>
 	<?php
 		$index = 0;
@@ -285,16 +281,12 @@ foreach($teams as $team) {
 		<tr>
 			<td><?=$index?></td>
 			<td><?=$game['home']?></td>
-			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'];?></td>
-			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'];?></td>
-			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'];?></td>
-			<td><?php if($home_goals == $away_goals && $game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_overtime'];?></td>
-			<td>:</td>
-			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['away_team_goal_1'];?></td>
-			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['away_team_goal_2'];?></td>
-			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['away_team_goal_3'];?></td>
-			<td><?php if($home_goals == $away_goals && $game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_overtime'];?></td>
 			<td><?=$game['away']?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo ($game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'] + $game['home_team_goal_overtime']) . " : " .  ($game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'] + $game['away_team_goal_overtime']);?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'] . " : " . $game['away_team_goal_1'];?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'] . " : " . $game['away_team_goal_2'];?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'] . " : " . $game['away_team_goal_3'];?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day'] && ($game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'] + $game['home_team_goal_overtime']) == ($game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'] + $game['away_team_goal_overtime'])) echo $game['home_team_goal_overtime'] . " : " . $game['away_team_goal_overtime'];?></td>		
 		</tr>
 	<?php } ?>
 	</table>

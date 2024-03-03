@@ -34,3 +34,4 @@ P1=1.D
 P2=2.D
 P3=3.D
 Ot=Nz
+Result=Ergebnis
