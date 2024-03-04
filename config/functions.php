@@ -297,6 +297,8 @@ function update_stats($con, $week)
                 }
             } 
             // no overtime -> restore used overtime goals
+            // currently we don't want the player to get its overtime goals back
+            /*
             else {
                 if($overtime_home > 0) {
                     $stmt = $con->prepare('UPDATE Team SET goal_account_overtime = goal_account_overtime + ? WHERE id = ?');
@@ -310,7 +312,7 @@ function update_stats($con, $week)
                     $stmt->execute();
                     $stmt->close();
                 }
-            }
+            }*/
 
             $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, lose = lose + ?, draw = draw + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
             $stmt->bind_param('iiiiiii', $home_points, $home_win, $home_lose, $draw, $goals_home, $goals_away, $game['home_team_id']);
