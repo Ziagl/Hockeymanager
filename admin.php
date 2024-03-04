@@ -18,6 +18,13 @@ if(isset($_POST['reset_game'])) {
 if(isset($_POST['next_day'])) {
 	to_next_day($con);
 }
+//next week
+if(isset($_POST['next_week'])) {
+	to_next_day($con);
+	to_next_day($con);
+	to_next_day($con);
+	to_next_day($con);
+}
 
 // get data from database
 
@@ -47,6 +54,11 @@ include 'content/header.php';
 	<form method="POST" action="">
 		<input type="submit" value="<?=$translator->__('Next day',$language)?>">
 		<input type="hidden" name="next_day" value="1"></input>
+	</form>
+	<p></p>
+	<form method="POST" action="">
+		<input type="submit" value="<?=$translator->__('Next week',$language)?>">
+		<input type="hidden" name="next_week" value="1"></input>
 	</form>
 	<p></p>
 	<form method="POST" action="">

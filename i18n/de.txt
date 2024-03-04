@@ -27,6 +27,7 @@ Activation=Aktivierungscode
 Dream Team=Wunschteam
 Functions=Funktionen
 Next day=nächster Tag
+Next week=nächste Woche
 Reset game=Spiel zurücksetzen
 Game schedule=Spielplan
 Game day=Spieltag

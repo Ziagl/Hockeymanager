@@ -354,6 +354,11 @@ function initialize_game($con, $goal_account_home, $goal_account_away, $goal_acc
 	$stmt->execute();
     $stmt->close();
 
+    // reset playdowns
+    $stmt = $con->prepare('TRUNCATE TABLE Playdown');
+    $stmt->execute();
+    $stmt->close();
+
     // reset games
     $stmt = $con->prepare('TRUNCATE TABLE Game');
     $stmt->execute();
