@@ -172,10 +172,11 @@ function is_ai_team($con, $team_id)
     return $is_ai_team;
 }
 
-function get_random_goals()
+function get_random_goals($max_array)
 {
     $goals = array();
 
+    // generate random goals
     for($i=0; $i<4; ++$i) {
         $random_value = random_int(0, 99);
         if ($random_value >= 50 && $random_value < 80) {
@@ -186,6 +187,13 @@ function get_random_goals()
             $goals[] = 3;
         } else {
             $goals[] = 0;
+        }
+    }
+
+    // check against max values
+    for($i = 0; $i < count($max_array); ++$i) {
+        if($goals[$i] > $max_array[$i]) {
+            $goals[$i] = $max_array[$i];
         }
     }
 
@@ -201,17 +209,33 @@ function team_ai($con, $state)
         $games = get_games_of_week($con, $league);
         foreach($games as $game) {
             if(is_ai_team($con, $game['home_team_id'])) {
-                $goals = get_random_goals();
+                $team = get_team_by_id($con, $game['home_team_id']);
+
+                $goals = get_random_goals(array($team['goal_account_home_1'], $team['goal_account_home_2'], $team['goal_account_home_3'], $team['goal_account_overtime']));
+                
                 $stmt = $con->prepare('UPDATE Game SET home_team_goal_1 = ?, home_team_goal_2 = ?, home_team_goal_3 = ?, home_team_goal_overtime = ? WHERE id = ?');
                 $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $game['id']);
+                $stmt->execute();
+                $stmt->close();
+
+                $stmt = $con->prepare('UPDATE Team SET goal_account_home_1 = goal_account_home_1 - ?, goal_account_home_2 = goal_account_home_2 - ?, goal_account_home_3 = goal_account_home_3 - ?, goal_account_overtime = goal_account_overtime - ? WHERE id = ?');
+                $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $team['id']);
                 $stmt->execute();
                 $stmt->close();
             }
 
             if(is_ai_team($con, $game['away_team_id'])) {
-                $goals = get_random_goals();
+                $team = get_team_by_id($con, $game['away_team_id']);
+
+                $goals = get_random_goals(array($team['goal_account_away_1'], $team['goal_account_away_2'], $team['goal_account_away_3'], $team['goal_account_overtime']));
+
                 $stmt = $con->prepare('UPDATE Game SET away_team_goal_1 = ?, away_team_goal_2 = ?, away_team_goal_3 = ?, away_team_goal_overtime = ? WHERE id = ?');
                 $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $game['id']);
+                $stmt->execute();
+                $stmt->close();
+
+                $stmt = $con->prepare('UPDATE Team SET goal_account_away_1 = goal_account_away_1 - ?, goal_account_away_2 = goal_account_away_2 - ?, goal_account_away_3 = goal_account_away_3 - ?, goal_account_overtime = goal_account_overtime - ? WHERE id = ?');
+                $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $team['id']);
                 $stmt->execute();
                 $stmt->close();
             }
