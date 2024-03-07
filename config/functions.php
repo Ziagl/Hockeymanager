@@ -356,14 +356,28 @@ function update_stats($con, $week)
                 $away_lose = $overtime_away < $overtime_home ? 1 : 0;
                 $draw = $home_lose == 0 && $away_lose == 0 ? 1 : 0;
 
-                $home_points = 1;
-                $away_points = 1;
+                // if it is draw after overtime -> random winner
+                if($draw)
+                {
+                    // TODO add shootout here
+                    if(50 > random_int(0, 99))
+                    {
+                        $home_win = 1;
+                        $away_win = 0;
+                    }
+                    else
+                    {
+                        $home_win = 0;
+                        $away_win = 1;
+                    }
+                }
+                
                 if($home_win == 1) {
                     $home_points = 2;
-                    $away_points = 0;
+                    $away_points = 1;
                 }
                 if($away_win == 1) {
-                    $home_points = 0;
+                    $home_points = 1;
                     $away_points = 2;
                 }
             } 
