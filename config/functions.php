@@ -40,6 +40,22 @@ function get_team_by_points($con, $id)
     return $teams;
 }
 
+function get_league_standing($con, $league_id)
+{
+    $stmt = $con->prepare('SELECT * FROM Team WHERE league_id = ? ORDER BY points DESC, win DESC');
+    $stmt->bind_param('i', $league_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $teams = array();
+    while($team = $result->fetch_array())
+    {
+        $teams[] = $team;
+    }
+    $stmt->close();
+
+    return $teams;
+}
+
 // gets a league from database by id
 function get_league_by_id($con, $id)
 {
@@ -95,6 +111,31 @@ function get_games_by_league($con, $league)
     return $games;
 }
 
+function get_playdown_by_league_id($con, $league_id)
+{
+    $stmt = $con->prepare('SELECT * FROM Playdown WHERE league_id_up = ?');
+    $stmt->bind_param('i', $league['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $playdown = $result->fetch_array();
+    $stmt->close();
+
+    return $playdown;
+}
+
+function find_sub_league($con, $league)
+{
+    $next_division = ((int)$league['division']) + 1;
+    $stmt = $con->prepare('SELECT * FROM League WHERE country_id = ? AND division = ?');
+    $stmt->bind_param('ii', $league['country_id'], $next_division);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $league_result = $result->fetch_array();
+    $stmt->close();
+
+    return $league_result;
+}
+
 function get_game_day($con)
 {
     $stmt = $con->prepare('SELECT * FROM State WHERE id = 1');
@@ -142,12 +183,42 @@ function to_next_day($con)
         
         update_stats($con, $state['week']);
 
-        $stmt = $con->prepare('UPDATE League SET last_game_day = last_game_day + 4 WHERE name <> "NHL"');
-        $stmt->execute();
-        $stmt->close();
-        $stmt = $con->prepare('UPDATE League SET last_game_day = last_game_day + 5 WHERE name = "NHL"');
-        $stmt->execute();
-        $stmt->close();
+        $leagues = get_all_leagues($con);
+        foreach($leagues as $league) {
+            // store last game day
+            if($league['last_game_day'] < $league['max_game_days']) {
+                if($league['name'] == 'NHL') {
+                    $league['last_game_day'] = $league['last_game_day'] + 5;
+                } else {
+                    $league['last_game_day'] = $league['last_game_day'] + 4;
+                }
+                $stmt = $con->prepare('UPDATE League SET last_game_day = ? WHERE id = ?');
+                $stmt->bind_param('ii', $league['last_game_day'], $league['id']);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            // calculate playdowns
+            if($league['last_game_day'] == $league['max_game_days']) {
+                // if country is germany
+                if($league['country_id'] == 1) {
+                    $playdown = get_playdown_by_league_id($con, $league['id']);
+                    if(!$playdown) {
+                        $sub_league = find_sub_league($con, $league);
+                        if($sub_league) {
+                            var_dump($sub_league);
+                            $teams = get_league_standing($con, $league['id']);
+                            $sub_teams = get_league_standing($con, $sub_league);
+
+                            $stmt = $con->prepare('INSERT INTO Playdown (league_id_up, league_id_down, last_game_day, team_id_1, team_id_2, team_id_3, team_id_4) VALUES (?, ?, 0, ?, ?, ?, ?)');
+                            $stmt->bind_param('iiiiii', $league['id'], $sub_league['id'], $teams[count($teams) - 2]['id'], $teams[count($teams) - 1]['id'], $sub_teams[0]['id'], $sub_teams[1]['id']);
+                            $stmt->execute();
+                            $stmt->close();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     $stmt = $con->prepare('UPDATE State SET day = ?, week = ? WHERE id = 1');
@@ -400,6 +471,15 @@ function initialize_game($con, $goal_account_home, $goal_account_away, $goal_acc
             create_games($con, $combinations, $max_combinations * 2);
             create_games($con, $inverted_combinations, $max_combinations * 3);
         }
+
+        // set max game days
+        $league_array['id'] = $league;
+        $games = get_games_by_league($con, $league_array);
+        $number_of_games = count($games);
+        $stmt = $con->prepare('UPDATE League SET max_game_days = ? WHERE id = ?');
+        $stmt->bind_param('ii', $number_of_games, $league);
+        $stmt->execute();
+        $stmt->close();
     }
 }
 
