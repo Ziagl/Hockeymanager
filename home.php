@@ -17,6 +17,12 @@ include 'content/header.php';
 
 // get game state
 $state = get_game_day($con);
+// playoff or playdown
+$playoff = null;
+$playdown = get_play_down($con, $user['team_id']);
+if($playdown == null) {
+	//$playoff = get_play_off($con, $user['team_id']);
+}
 
 // form response
 
@@ -28,7 +34,11 @@ if(isset($_POST['game_id'])) {
 	$gaa = array($user_team['goal_account_away_1'], $user_team['goal_account_away_2'], $user_team['goal_account_away_3']);
 	$gao = $user_team['goal_account_overtime'];
 
-	$statement = 'UPDATE Game SET';
+	if($playdown != null) {
+		$statement = 'UPDATE PlaydownGame SET';
+	} else {
+		$statement = 'UPDATE Game SET';
+	}
 	$periods = array('1', '2', '3');
 	foreach($periods as $period) {
 		if(isset($_POST['home_team_goal_'.$period])) {
@@ -82,7 +92,7 @@ if($user['team_id'] == 0) { ?>
 <?php } else { 
 // user has a team
 $user_team = get_team_by_id($con, $user['team_id']);
-// show league table
+// show goal stats
 ?>
 , <?=$translator->__('coach of',$language)?> <?=$user_team['name']?></p>
 <div>
@@ -105,12 +115,23 @@ $user_team = get_team_by_id($con, $user['team_id']);
 <?php
 // get the leage of this use
 $user_league = get_league_by_id($con, $user['team_id']);
+
 // get next matches
-$games_per_week = $user_league['name'] == 'NHL' ? 5 : 4;
-$last_game_day = $user_league['last_game_day'] + $games_per_week;
-$first_game_day = $last_game_day - $games_per_week;
-$stmt = $con->prepare('SELECT * FROM Game WHERE game_day <= ? AND game_day > ? AND (home_team_id = ? OR away_team_id = ?)');
-$stmt->bind_param('iiii', $last_game_day, $first_game_day, $user['team_id'], $user['team_id']);
+if($playoff != null) {
+
+}
+else if($playdown != null) {
+	$last_game_day = $playdown['last_game_day'] + 1;
+	$stmt = $con->prepare('SELECT * FROM PlaydownGame WHERE game_day = ? AND (home_team_id = ? OR away_team_id = ?)');
+	$stmt->bind_param('iii', $last_game_day, $user['team_id'], $user['team_id']);
+}
+else {
+	$games_per_week = $user_league['name'] == 'NHL' ? 5 : 4;
+	$last_game_day = $user_league['last_game_day'] + $games_per_week;
+	$first_game_day = $last_game_day - $games_per_week;
+	$stmt = $con->prepare('SELECT * FROM Game WHERE game_day <= ? AND game_day > ? AND (home_team_id = ? OR away_team_id = ?)');
+	$stmt->bind_param('iiii', $last_game_day, $first_game_day, $user['team_id'], $user['team_id']);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 $games = array();
@@ -222,20 +243,21 @@ foreach($games as $game)
 <?php }
 ?>
 </div>
+<?php if($playdown != null) {
+?>
 <div>
-	<p><?=$translator->__('League table',$language)?>:</p>
+	<p><?=$translator->__('Playdown table',$language)?>:</p>
 	<table>
 		<tr>
 			<th>#</th>
 			<th><?=$translator->__('Name',$language)?></th>
 			<th><?=$translator->__('Win',$language)?></th>
-			<th><?=$translator->__('Draw',$language)?></th>
 			<th><?=$translator->__('Lose',$language)?></th>
 			<th><?=$translator->__('Goals',$language)?></th>
 			<th><?=$translator->__('Points',$language)?></th>
 		</tr>
 <?php
-$teams = get_team_by_points($con, $user['team_id']);
+$teams = get_team_by_points($con, $user['team_id'], 1);
 $index = 0;
 foreach($teams as $team) {
 	?>
@@ -243,7 +265,36 @@ foreach($teams as $team) {
 			<td><?=++$index?></td>
 			<td><?=$team['name']?></td>
 			<td><?=$team['win']?></td>
-			<td><?=$team['draw']?></td>
+			<td><?=$team['lose']?></td>
+			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
+			<td><?=$team['points']?></td>
+		</tr>
+<?php
+}
+?>
+	</table>
+</div>
+<?php } ?>
+<div>
+	<p><?=$translator->__('League table',$language)?>:</p>
+	<table>
+		<tr>
+			<th>#</th>
+			<th><?=$translator->__('Name',$language)?></th>
+			<th><?=$translator->__('Win',$language)?></th>
+			<th><?=$translator->__('Lose',$language)?></th>
+			<th><?=$translator->__('Goals',$language)?></th>
+			<th><?=$translator->__('Points',$language)?></th>
+		</tr>
+<?php
+$teams = get_team_by_points($con, $user['team_id'], 0);
+$index = 0;
+foreach($teams as $team) {
+	?>
+		<tr>
+			<td><?=++$index?></td>
+			<td><?=$team['name']?></td>
+			<td><?=$team['win']?></td>
 			<td><?=$team['lose']?></td>
 			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
 			<td><?=$team['points']?></td>
@@ -286,7 +337,7 @@ foreach($teams as $team) {
 			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'] . " : " . $game['away_team_goal_1'];?></td>
 			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'] . " : " . $game['away_team_goal_2'];?></td>
 			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'] . " : " . $game['away_team_goal_3'];?></td>
-			<td><?php if($game['game_day'] <= $game['last_game_day'] && ($game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'] + $game['home_team_goal_overtime']) == ($game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'] + $game['away_team_goal_overtime'])) echo $game['home_team_goal_overtime'] . " : " . $game['away_team_goal_overtime'];?></td>		
+			<td><?php if($game['game_day'] <= $game['last_game_day'] && ($game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3']) == ($game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'])) echo $game['home_team_goal_overtime'] . " : " . $game['away_team_goal_overtime'];?></td>		
 		</tr>
 	<?php } ?>
 	</table>

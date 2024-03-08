@@ -25,6 +25,15 @@ if(isset($_POST['next_week'])) {
 	to_next_day($con);
 	to_next_day($con);
 }
+//compute league
+if(isset($_POST['compute_league'])) {
+	for($i = 0; $i < 11; ++$i) {
+		to_next_day($con);
+		to_next_day($con);
+		to_next_day($con);
+		to_next_day($con);
+	}
+}
 
 // get data from database
 
@@ -59,6 +68,11 @@ include 'content/header.php';
 	<form method="POST" action="">
 		<input type="submit" value="<?=$translator->__('Next week',$language)?>">
 		<input type="hidden" name="next_week" value="1"></input>
+	</form>
+	<p></p>
+	<form method="POST" action="">
+		<input type="submit" value="<?=$translator->__('Compute league',$language)?>">
+		<input type="hidden" name="compute_league" value="1"></input>
 	</form>
 	<p></p>
 	<form method="POST" action="">
