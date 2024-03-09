@@ -38,4 +38,4 @@ Ot=Nz
 Result=Ergebnis
 Playdown table=Playdown Tabelle
 Compute league=Liga Saison berechnen
-Playdown schedule=Playdwn Spielplan
+Playdown schedule=Playdown Spielplan

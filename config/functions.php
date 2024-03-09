@@ -255,6 +255,7 @@ function to_next_day($con)
         $state['week'] = ((int)$state['week']) + 1;
         
         $leagues = get_all_leagues($con);
+        $leagues_to_create_playdown = array();
         foreach($leagues as $league) {
             $playdown = get_playdown_by_league_id($con, $league['id']);
             // end of saison -> playdown and playoff handling
@@ -295,41 +296,49 @@ function to_next_day($con)
                         if($playdown == null) {
                             $sub_league = find_sub_league($con, $league);
                             if($sub_league) {
-                                $teams = get_league_standing($con, $league['id']);
-                                $sub_teams = get_league_standing($con, $sub_league['id']);
-
-                                $playdown_teams = array();
-                                $playdown_teams[] = $teams[count($teams) - 2]['id'];
-                                $playdown_teams[] = $teams[count($teams) - 1]['id'];
-                                $playdown_teams[] = $sub_teams[0]['id'];
-                                $playdown_teams[] = $sub_teams[1]['id'];
-
-                                // create playdown reference table
-                                $max_game_days = count($playdown_teams) - 1;
-                                $stmt = $con->prepare('INSERT INTO Playdown (league_id_up, league_id_down, max_game_days, last_game_day, team_id_1, team_id_2, team_id_3, team_id_4) VALUES (?, ?, ?, 0, ?, ?, ?, ?)');
-                                $stmt->bind_param('iiiiiii', $league['id'], $sub_league['id'], $max_game_days, $playdown_teams[0], $playdown_teams[1], $playdown_teams[2], $playdown_teams[3]);
-                                $stmt->execute();
-                                $stmt->close();
-                                $playdown_id = mysqli_insert_id($con);
-
-                                // create playdown games
-                                $combinations = find_combinations($playdown_teams);
-                                $inverted_combinations = invert_combinations($combinations);
-  
-                                $max_combinations = count($combinations);
-                                create_playdown_games($con, $combinations, $playdown_id, 0);
-                                create_playdown_games($con, $inverted_combinations, $playdown_id, $max_combinations);
-
-                                // create playdown teams
-                                foreach($playdown_teams as $team_id) {
-                                    $stmt = $con->prepare('INSERT INTO PlaydownTeam (playdown_id, team_id) VALUES (?, ?)');
-                                    $stmt->bind_param('ii', $playdown_id, $team_id);
-                                    $stmt->execute();
-                                    $stmt->close();
-                                }
+                                $leagues_to_create_playdown[] = $league;
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // now actually create playdown data
+        foreach($leagues_to_create_playdown as $league){
+            $sub_league = find_sub_league($con, $league);
+            if($sub_league) {
+                $teams = get_league_standing($con, $league['id']);
+                $sub_teams = get_league_standing($con, $sub_league['id']);
+
+                $playdown_teams = array();
+                $playdown_teams[] = $teams[count($teams) - 2]['id'];
+                $playdown_teams[] = $teams[count($teams) - 1]['id'];
+                $playdown_teams[] = $sub_teams[0]['id'];
+                $playdown_teams[] = $sub_teams[1]['id'];
+
+                // create playdown reference table
+                $max_game_days = count($playdown_teams) - 1;
+                $stmt = $con->prepare('INSERT INTO Playdown (league_id_up, league_id_down, max_game_days, last_game_day, team_id_1, team_id_2, team_id_3, team_id_4) VALUES (?, ?, ?, 0, ?, ?, ?, ?)');
+                $stmt->bind_param('iiiiiii', $league['id'], $sub_league['id'], $max_game_days, $playdown_teams[0], $playdown_teams[1], $playdown_teams[2], $playdown_teams[3]);
+                $stmt->execute();
+                $stmt->close();
+                $playdown_id = mysqli_insert_id($con);
+
+                // create playdown games
+                $combinations = find_combinations($playdown_teams);
+                $inverted_combinations = invert_combinations($combinations);
+
+                $max_combinations = count($combinations);
+                create_playdown_games($con, $combinations, $playdown_id, 0);
+                create_playdown_games($con, $inverted_combinations, $playdown_id, $max_combinations);
+
+                // create playdown teams
+                foreach($playdown_teams as $team_id) {
+                    $stmt = $con->prepare('INSERT INTO PlaydownTeam (playdown_id, team_id) VALUES (?, ?)');
+                    $stmt->bind_param('ii', $playdown_id, $team_id);
+                    $stmt->execute();
+                    $stmt->close();
                 }
             }
         }
