@@ -116,6 +116,21 @@ function get_games_by_league($con, $league)
     return $games;
 }
 
+function get_games_by_playdown($con, $playdown)
+{
+    $stmt = $con->prepare('SELECT g.*, thome.name as "home", taway.name as "away", p.last_game_day FROM PlaydownGame g JOIN Team thome ON thome.id = g.home_team_id JOIN Team taway ON taway.id = g.away_team_id JOIN Playdown p ON p.id = g.playdown_id WHERE playdown_id = ? ORDER BY game_day ASC');
+    $stmt->bind_param('i', $playdown['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $games = array();
+    while($game = $result->fetch_array()){
+        $games[$game['game_day']][] = $game;
+    }
+    $stmt->close();
+
+    return $games;
+}
+
 function get_playdown_by_league_id($con, $league_id)
 {
     $stmt = $con->prepare('SELECT * FROM Playdown WHERE league_id_up = ? OR league_id_down = ?');

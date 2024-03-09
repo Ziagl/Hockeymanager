@@ -304,12 +304,54 @@ foreach($teams as $team) {
 ?>
 	</table>
 </div>
+<?php if($playdown != null) { ?>
 <div>
-	<p><?=$translator->__('Game schedule',$language)?>:</p>
+	<p><?=$translator->__('Playdown schedule',$language)?>:</p>
+	<?php 
+		$games = get_games_by_playdown($con, $playdown);
+		foreach($games as $game_day) { ?>
+	<br>
+	<p><?=$translator->__('Game day',$language)?> <?=$game_day[0]['game_day']?></p>
+	<table>
+		<tr>
+			<th>#</th>
+			<th>Team</th>
+			<th>Team</th>
+			<th><?=$translator->__('Result',$language)?></th>
+			<th><?=$translator->__('P1',$language)?></th>
+			<th><?=$translator->__('P2',$language)?></th>
+			<th><?=$translator->__('P3',$language)?></th>
+			<th><?=$translator->__('Ot',$language)?></th>
+		</tr>
+	<?php
+		$index = 0;
+		foreach($game_day as $game) {
+			$index++;
+			$home_goals = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'];
+			$away_goals = $game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'];
+	?>
+		<tr>
+			<td><?=$index?></td>
+			<td><?=$game['home']?></td>
+			<td><?=$game['away']?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo ($game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'] + $game['home_team_goal_overtime']) . " : " .  ($game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'] + $game['away_team_goal_overtime']);?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'] . " : " . $game['away_team_goal_1'];?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'] . " : " . $game['away_team_goal_2'];?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'] . " : " . $game['away_team_goal_3'];?></td>
+			<td><?php if($game['game_day'] <= $game['last_game_day'] && ($game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3']) == ($game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'])) echo $game['home_team_goal_overtime'] . " : " . $game['away_team_goal_overtime'];?></td>		
+		</tr>
+	<?php } ?>
+	</table>
+	<?php } ?>
+</div>
+<?php } ?>
+<div>
+	<p><?=$translator->__('League schedule',$language)?>:</p>
 	<?php
 		$games = get_games_by_league($con, $user_league);
 		foreach($games as $game_day) {
 	?>
+	<br>
 	<p><?=$translator->__('Game day',$language)?> <?=$game_day[0]['game_day']?></p>
 	<table>
 		<tr>
