@@ -143,6 +143,18 @@ function get_playdown_by_league_id($con, $league_id)
     return $playdown;
 }
 
+function get_playoff_by_league_id($con, $league_id)
+{
+    $stmt = $con->prepare('SELECT * FROM Playoff WHERE league_id = ?');
+    $stmt->bind_param('i', $league_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $playoff = $result->fetch_array();
+    $stmt->close();
+
+    return $playoff;
+}
+
 function get_all_playdown($con)
 {
     $stmt = $con->prepare('SELECT * FROM Playdown');
@@ -256,6 +268,7 @@ function to_next_day($con)
         
         $leagues = get_all_leagues($con);
         $leagues_to_create_playdown = array();
+        $leagues_to_create_playoff = array();
         foreach($leagues as $league) {
             $playdown = get_playdown_by_league_id($con, $league['id']);
             // end of saison -> playdown and playoff handling
@@ -274,7 +287,6 @@ function to_next_day($con)
             else {
                 // store last game day
                 if($league['last_game_day'] < $league['max_game_days']) {
-
                     update_stats_of_league($con, $state['week'], $league);
 
                     if($league['name'] == 'NHL') {
@@ -298,6 +310,14 @@ function to_next_day($con)
                             if($sub_league) {
                                 $leagues_to_create_playdown[] = $league;
                             }
+                        }
+                    }
+
+                    // calculate playoffs
+                    if($league['division'] == 1) {
+                        $playoff = get_playoff_by_league_id($con, $league['id']);
+                        if($playoff == null) {
+                            $leagues_to_create_playoff[] = $league;
                         }
                     }
                 }
@@ -340,6 +360,43 @@ function to_next_day($con)
                     $stmt->execute();
                     $stmt->close();
                 }
+            }
+        }
+
+        // now actually create playoff data
+        foreach($leagues_to_create_playoff as $league){
+            $teams = get_league_standing($con, $league['id']);
+
+            $playoff_teams = array();
+            $playoff_teams[] = $teams[0]['id'];
+            $playoff_teams[] = $teams[1]['id'];
+            $playoff_teams[] = $teams[2]['id'];
+            $playoff_teams[] = $teams[3]['id'];
+            $playoff_teams[] = $teams[4]['id'];
+            $playoff_teams[] = $teams[5]['id'];
+            $playoff_teams[] = $teams[6]['id'];
+            $playoff_teams[] = $teams[7]['id'];
+
+            // create playoff reference table
+            $max_game_days = count($playoff_teams) - 1;
+            $stmt = $con->prepare('INSERT INTO Playoff (league_id, last_round, last_game_day, team_id_1, team_id_2, team_id_3, team_id_4, team_id_5, team_id_6, team_id_7, team_id_8) VALUES (?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->bind_param('iiiiiiiii', $league['id'], $playoff_teams[0], $playoff_teams[1], $playoff_teams[2], $playoff_teams[3], $playoff_teams[4], $playoff_teams[5], $playoff_teams[6], $playoff_teams[7]);
+            $stmt->execute();
+            $stmt->close();
+            $playoff_id = mysqli_insert_id($con);
+
+            // create playoff games
+            create_playoff_games($con, 0, $playoff_id, $playoff_teams[0], $playoff_teams[7]);
+            create_playoff_games($con, 0, $playoff_id, $playoff_teams[1], $playoff_teams[6]);
+            create_playoff_games($con, 0, $playoff_id, $playoff_teams[2], $playoff_teams[5]);
+            create_playoff_games($con, 0, $playoff_id, $playoff_teams[3], $playoff_teams[4]);
+
+            // create playoff teams
+            foreach($playoff_teams as $team_id) {
+                $stmt = $con->prepare('INSERT INTO PlayoffTeam (playoff_id, team_id) VALUES (?, ?)');
+                $stmt->bind_param('ii', $playoff_id, $team_id);
+                $stmt->execute();
+                $stmt->close();
             }
         }
     }
@@ -621,6 +678,19 @@ function initialize_game($con, $goal_account_home, $goal_account_away, $goal_acc
     $stmt->execute();
     $stmt->close();
 
+    // reset playoffs
+    $stmt = $con->prepare('TRUNCATE TABLE Playoff');
+    $stmt->execute();
+    $stmt->close();
+
+    $stmt = $con->prepare('TRUNCATE TABLE PlayoffGame');
+    $stmt->execute();
+    $stmt->close();
+
+    $stmt = $con->prepare('TRUNCATE TABLE PlayoffTeam');
+    $stmt->execute();
+    $stmt->close();
+
     // reset games
     $stmt = $con->prepare('TRUNCATE TABLE Game');
     $stmt->execute();
@@ -702,6 +772,21 @@ function create_playdown_games($con, $combinations, $playdown_id, $last_game_day
             $stmt->execute();
             $stmt->close();
         }
+    }
+}
+
+function create_playoff_games($con, $last_game_day, $playoff_id, $team_id_1, $team_id_2)
+{
+    for($i = 0; $i < 7; ++$i) {
+        $last_game_day++;
+        $stmt = $con->prepare('INSERT INTO PlayoffGame (game_day, playoff_id, home_team_id, away_team_id) VALUES (?, ?, ?, ?)');
+        if($i % 2 == 0) {
+            $stmt->bind_param('iiii', $last_game_day, $playoff_id, $team_id_1, $team_id_2);
+        } else {
+            $stmt->bind_param('iiii', $last_game_day, $playoff_id, $team_id_2, $team_id_1);
+        }
+        $stmt->execute();
+        $stmt->close();
     }
 }
 

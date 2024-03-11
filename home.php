@@ -18,11 +18,8 @@ include 'content/header.php';
 // get game state
 $state = get_game_day($con);
 // playoff or playdown
-$playoff = null;
 $playdown = get_play_down($con, $user['team_id']);
-if($playdown == null) {
-	//$playoff = get_play_off($con, $user['team_id']);
-}
+$playoff = get_play_off($con, $user['team_id']);
 
 // form response
 
@@ -118,7 +115,9 @@ $user_league = get_league_by_id($con, $user['team_id']);
 
 // get next matches
 if($playoff != null) {
-
+	$last_game_day = $playoff['last_game_day'] + 1;
+	$stmt = $con->prepare('SELECT * FROM PlayoffGame WHERE game_day = ? AND (home_team_id = ? OR away_team_id = ?)');
+	$stmt->bind_param('iii', $last_game_day, $user['team_id'], $user['team_id']);
 }
 else if($playdown != null) {
 	$last_game_day = $playdown['last_game_day'] + 1;
