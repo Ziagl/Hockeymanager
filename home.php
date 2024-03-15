@@ -33,6 +33,8 @@ if(isset($_POST['game_id'])) {
 
 	if($playdown != null) {
 		$statement = 'UPDATE PlaydownGame SET';
+	} else if ($playoff != null) {
+		$statement =  'UPDATE PlayoffGame SET';
 	} else {
 		$statement = 'UPDATE Game SET';
 	}
@@ -267,6 +269,53 @@ foreach($teams as $team) {
 			<td><?=$team['lose']?></td>
 			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
 			<td><?=$team['points']?></td>
+		</tr>
+<?php
+}
+?>
+	</table>
+</div>
+<?php } else if ($playoff != null) { ?>
+<div>
+	<p><?=$translator->__('Playoff table',$language)?>:</p>
+	<table>
+		<tr>
+			<th>#</th>
+			<th><?=$translator->__('Name',$language)?></th>
+			<th>1</th>
+			<th>2</th>
+			<th>3</th>
+			<th>4</th>
+			<th>5</th>
+			<th>6</th>
+			<th>7</th>
+		</tr>
+<?php
+$games = playoff_games_by_league($con, $playoff);
+$index = 0;
+for($i = 0; $i < count($games); $i += 7) {
+	?>
+		<tr>
+			<td><?=++$index?></td>
+			<td><?=$games[0]['team1']?></td>
+			<td><?php if($playoff['game_day'] <= $games[0]['game_day']) { if (($games[0]['home_team_goal_1'] + $games[0]['home_team_goal_2'] + $games[0]['home_team_goal_3']) > ($games[0]['away_team_goal_1'] + $games[0]['away_team_goal_2'] + $games[0]['away_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[1]['game_day']) { if (($games[1]['home_team_goal_1'] + $games[1]['home_team_goal_2'] + $games[1]['home_team_goal_3']) > ($games[1]['away_team_goal_1'] + $games[1]['away_team_goal_2'] + $games[1]['away_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[2]['game_day']) { if (($games[2]['home_team_goal_1'] + $games[2]['home_team_goal_2'] + $games[2]['home_team_goal_3']) > ($games[2]['away_team_goal_1'] + $games[2]['away_team_goal_2'] + $games[2]['away_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[3]['game_day']) { if (($games[3]['home_team_goal_1'] + $games[3]['home_team_goal_2'] + $games[3]['home_team_goal_3']) > ($games[3]['away_team_goal_1'] + $games[3]['away_team_goal_2'] + $games[3]['away_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[4]['game_day']) { if (($games[4]['home_team_goal_1'] + $games[4]['home_team_goal_2'] + $games[4]['home_team_goal_3']) > ($games[4]['away_team_goal_1'] + $games[4]['away_team_goal_2'] + $games[4]['away_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[5]['game_day']) { if (($games[5]['home_team_goal_1'] + $games[5]['home_team_goal_2'] + $games[5]['home_team_goal_3']) > ($games[5]['away_team_goal_1'] + $games[5]['away_team_goal_2'] + $games[5]['away_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[6]['game_day']) { if (($games[6]['home_team_goal_1'] + $games[6]['home_team_goal_2'] + $games[6]['home_team_goal_3']) > ($games[6]['away_team_goal_1'] + $games[6]['away_team_goal_2'] + $games[6]['away_team_goal_3'])) echo 'X'; }?></td>
+		</tr>
+		<tr>
+			<td><?=++$index?></td>
+			<td><?=$games[0]['team2']?></td>
+			<td><?php if($playoff['game_day'] <= $games[0]['game_day']) { if (($games[0]['away_team_goal_1'] + $games[0]['away_team_goal_2'] + $games[0]['away_team_goal_3']) > ($games[0]['home_team_goal_1'] + $games[0]['home_team_goal_2'] + $games[0]['home_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[1]['game_day']) { if (($games[1]['away_team_goal_1'] + $games[1]['away_team_goal_2'] + $games[1]['away_team_goal_3']) > ($games[1]['home_team_goal_1'] + $games[1]['home_team_goal_2'] + $games[1]['home_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[2]['game_day']) { if (($games[2]['away_team_goal_1'] + $games[2]['away_team_goal_2'] + $games[2]['away_team_goal_3']) > ($games[2]['home_team_goal_1'] + $games[2]['home_team_goal_2'] + $games[2]['home_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[3]['game_day']) { if (($games[3]['away_team_goal_1'] + $games[3]['away_team_goal_2'] + $games[3]['away_team_goal_3']) > ($games[3]['home_team_goal_1'] + $games[3]['home_team_goal_2'] + $games[3]['home_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[6]['game_day']) { if (($games[6]['away_team_goal_1'] + $games[6]['away_team_goal_2'] + $games[6]['away_team_goal_3']) > ($games[6]['home_team_goal_1'] + $games[6]['home_team_goal_2'] + $games[6]['home_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[4]['game_day']) { if (($games[4]['away_team_goal_1'] + $games[4]['away_team_goal_2'] + $games[4]['away_team_goal_3']) > ($games[4]['home_team_goal_1'] + $games[4]['home_team_goal_2'] + $games[4]['home_team_goal_3'])) echo 'X'; }?></td>
+			<td><?php if($playoff['game_day'] <= $games[5]['game_day']) { if (($games[5]['away_team_goal_1'] + $games[5]['away_team_goal_2'] + $games[5]['away_team_goal_3']) > ($games[5]['home_team_goal_1'] + $games[5]['home_team_goal_2'] + $games[5]['home_team_goal_3'])) echo 'X'; }?></td>
 		</tr>
 <?php
 }

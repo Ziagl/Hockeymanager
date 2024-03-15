@@ -221,6 +221,21 @@ function get_play_off($con, $team_id)
     return $return;
 }
 
+function playoff_games_by_league($con, $playoff)
+{
+    $stmt = $con->prepare('SELECT g.*, t1.name as team1, t2.name as team2 FROM PlayoffGame g JOIN Team t1 ON t1.id = g.home_team_id JOIN Team t2 ON t2.id = g.away_team_id WHERE g.playoff_id = ? ');
+    $stmt->bind_param('i', $playoff['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $games = array();
+    while($game = $result->fetch_array()) {
+        $games[] = $game;
+    }
+    $stmt->close();
+
+    return $games;
+}
+
 function get_game_day($con)
 {
     $stmt = $con->prepare('SELECT * FROM State WHERE id = 1');

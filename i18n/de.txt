@@ -39,3 +39,4 @@ Result=Ergebnis
 Playdown table=Playdown Tabelle
 Compute league=Liga Saison berechnen
 Playdown schedule=Playdown Spielplan
+Playoff table=Playoff Tabelle
