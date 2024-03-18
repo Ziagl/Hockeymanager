@@ -24,6 +24,18 @@ function get_team_by_id($con, $id)
     return $user_team;
 }
 
+function get_playoff_team_by_id($con, $id)
+{
+    $stmt = $con->prepare('SELECT * FROM PlayoffTeam WHERE id = ?');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user_team = $result->fetch_array();
+    $stmt->close();
+
+    return $user_team;
+}
+
 function get_team_by_points($con, $id, $type) // type...0 league, 1 playdown
 {
     if($type == 1) {
@@ -92,6 +104,30 @@ function get_all_leagues($con)
 function get_game_by_id($con, $id)
 {
     $stmt = $con->prepare('SELECT * FROM Game WHERE id = ?');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $game = $result->fetch_array();
+    $stmt->close();
+
+    return $game;
+}
+
+function get_playdown_game_by_id($con, $id)
+{
+    $stmt = $con->prepare('SELECT * FROM PlaydownGame WHERE id = ?');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $game = $result->fetch_array();
+    $stmt->close();
+
+    return $game;
+}
+
+function get_playoff_game_by_id($con, $id)
+{
+    $stmt = $con->prepare('SELECT * FROM PlayoffGame WHERE id = ?');
     $stmt->bind_param('i', $id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -184,6 +220,21 @@ function get_games_of_playdown_and_game_day($con, $playdown, $game_day)
     return $games;
 }
 
+function get_games_of_playoff_and_round_and_game_day($con, $playoff, $game_day, $round)
+{
+    $stmt = $con->prepare('SELECT * FROM PlayoffGame WHERE playoff_id = ? AND game_day = ? AND round = ?');
+    $stmt->bind_param('iii', $playoff['id'], $game_day, $round);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $games = array();
+    while($game = $result->fetch_array()) {
+        $games[] = $game;
+    }
+    $stmt->close();
+
+    return $games;
+}
+
 function find_sub_league($con, $league)
 {
     $next_division = ((int)$league['division']) + 1;
@@ -223,8 +274,9 @@ function get_play_off($con, $team_id)
 
 function playoff_games_by_league($con, $playoff)
 {
-    $stmt = $con->prepare('SELECT g.*, t1.name as team1, t2.name as team2 FROM PlayoffGame g JOIN Team t1 ON t1.id = g.home_team_id JOIN Team t2 ON t2.id = g.away_team_id WHERE g.playoff_id = ? ');
-    $stmt->bind_param('i', $playoff['id']);
+    $round = $playoff['last_round'] + 1;
+    $stmt = $con->prepare('SELECT g.*, t1.name as team1, t2.name as team2 FROM PlayoffGame g JOIN Team t1 ON t1.id = g.home_team_id JOIN Team t2 ON t2.id = g.away_team_id WHERE g.round = ? AND g.playoff_id = ? ');
+    $stmt->bind_param('ii', $round, $playoff['id']);
     $stmt->execute();
     $result = $stmt->get_result();
     $games = array();
@@ -273,7 +325,7 @@ function to_next_day($con)
     $state = get_game_day($con);
 
     if($state['day'] == 0) {
-        team_ai($con, $state);
+        team_ai($con);
     }
 
     $state['day'] = ((int)$state['day']) + 1;
@@ -286,16 +338,49 @@ function to_next_day($con)
         $leagues_to_create_playoff = array();
         foreach($leagues as $league) {
             $playdown = get_playdown_by_league_id($con, $league['id']);
-            // end of saison -> playdown and playoff handling
-            if($playdown != null && $league['country_id'] == 1) {
-                $next_game_day = $playdown['last_game_day'] + 1;
-                if($next_game_day <= $playdown['max_game_days']) {
-                    update_playdown_stats($con, $next_game_day, $playdown);
+            $playoff = get_playoff_by_league_id($con, $league['id']);
 
-                    $stmt = $con->prepare('UPDATE Playdown SET last_game_day = ? WHERE id = ?');
-                    $stmt->bind_param('ii', $next_game_day, $playdown['id']);
-                    $stmt->execute();
-                    $stmt->close();
+            // end of saison -> playdown and playoff handling
+            if(($playdown != null && $league['country_id'] == 1) || $playoff != null) {
+                // playdown day by day
+                if($playdown != null && $league['country_id'] == 1) {
+                    team_ai_playdown($con, $playdown);
+
+                    $next_game_day = $playdown['last_game_day'] + 1;
+                    if($next_game_day <= $playdown['max_game_days']) {
+                        update_playdown_stats($con, $next_game_day, $playdown);
+
+                        $stmt = $con->prepare('UPDATE Playdown SET last_game_day = ? WHERE id = ?');
+                        $stmt->bind_param('ii', $next_game_day, $playdown['id']);
+                        $stmt->execute();
+                        $stmt->close();
+                    }
+                }
+
+                // playoff day by day
+                if($playoff != null) {
+                    team_ai_playoff($con, $playoff);
+
+                    // update teams
+                    $round = $playoff['last_round'] + 1;
+                    $game_day = $playoff['last_game_day'] + 1;
+                    update_playoff_stats($con, $game_day, $round, $playoff);
+
+                    // move to next game day
+                    if($playoff['last_game_day' < 7]) {
+                        $stmt = $con->prepare('UPDATE Playoff SET last_game_day = last_game_day + 1 WHERE id = ?');
+                        $stmt->bind_param('i', $playoff['id']);
+                        $stmt->execute();
+                        $stmt->close();
+                    } else {
+                        // TODO create next games
+
+                        // move to next round
+                        $stmt = $con->prepare('UPDATE Playoff SET last_round = last_round + 1 WHERE id = ?');
+                        $stmt->bind_param('i', $playoff['id']);
+                        $stmt->execute();
+                        $stmt->close();
+                    }
                 }
             }
             // default season handling
@@ -319,7 +404,7 @@ function to_next_day($con)
                 if($league['last_game_day'] == $league['max_game_days']) {
                     // if country is germany
                     if($league['country_id'] == 1) {
-                        $playdown = get_playdown_by_league_id($con, $league['id']);
+                        //$playdown = get_playdown_by_league_id($con, $league['id']);
                         if($playdown == null) {
                             $sub_league = find_sub_league($con, $league);
                             if($sub_league) {
@@ -330,7 +415,7 @@ function to_next_day($con)
 
                     // calculate playoffs
                     if($league['division'] == 1) {
-                        $playoff = get_playoff_by_league_id($con, $league['id']);
+                        //$playoff = get_playoff_by_league_id($con, $league['id']);
                         if($playoff == null) {
                             $leagues_to_create_playoff[] = $league;
                         }
@@ -467,7 +552,7 @@ function get_random_goals($max_array)
 }
 
 // team ai that automatically sets goals
-function team_ai($con, $state)
+function team_ai($con)
 {
     $leagues = get_all_leagues($con);
 
@@ -509,6 +594,83 @@ function team_ai($con, $state)
     }
 }
 
+function team_ai_playdown($con, $playdown)
+{
+    $game_day = $playdown['last_game_day'] + 1;
+    $games = get_games_of_playdown_and_game_day($con, $playdown, $game_day);
+    foreach($games as $game) {
+        if(is_ai_team($con, $game['home_team_id'])) {
+            $team = get_team_by_id($con, $game['home_team_id']);
+
+            $goals = get_random_goals(array($team['goal_account_home_1'], $team['goal_account_home_2'], $team['goal_account_home_3'], $team['goal_account_overtime']));
+            
+            $stmt = $con->prepare('UPDATE PlaydownGame SET home_team_goal_1 = ?, home_team_goal_2 = ?, home_team_goal_3 = ?, home_team_goal_overtime = ? WHERE id = ?');
+            $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $game['id']);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $con->prepare('UPDATE Team SET goal_account_home_1 = goal_account_home_1 - ?, goal_account_home_2 = goal_account_home_2 - ?, goal_account_home_3 = goal_account_home_3 - ?, goal_account_overtime = goal_account_overtime - ? WHERE id = ?');
+            $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $team['id']);
+            $stmt->execute();
+            $stmt->close();
+        }
+        if(is_ai_team($con, $game['away_team_id'])) {
+            $team = get_team_by_id($con, $game['away_team_id']);
+
+            $goals = get_random_goals(array($team['goal_account_away_1'], $team['goal_account_away_2'], $team['goal_account_away_3'], $team['goal_account_overtime']));
+
+            $stmt = $con->prepare('UPDATE PlaydownGame SET away_team_goal_1 = ?, away_team_goal_2 = ?, away_team_goal_3 = ?, away_team_goal_overtime = ? WHERE id = ?');
+            $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $game['id']);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $con->prepare('UPDATE Team SET goal_account_away_1 = goal_account_away_1 - ?, goal_account_away_2 = goal_account_away_2 - ?, goal_account_away_3 = goal_account_away_3 - ?, goal_account_overtime = goal_account_overtime - ? WHERE id = ?');
+            $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $team['id']);
+            $stmt->execute();
+            $stmt->close();
+        }
+    }
+}
+
+function team_ai_playoff($con, $playoff)
+{
+    $game_day = $playoff['last_game_day'] + 1;
+    $round = $playoff['last_round'] + 1;
+    $games = get_games_of_playoff_and_round_and_game_day($con, $playoff, $game_day, $round);
+    foreach($games as $game) {
+        if(is_ai_team($con, $game['home_team_id'])) {
+            $team = get_team_by_id($con, $game['home_team_id']);
+
+            $goals = get_random_goals(array($team['goal_account_home_1'], $team['goal_account_home_2'], $team['goal_account_home_3'], $team['goal_account_overtime']));
+            
+            $stmt = $con->prepare('UPDATE PlayoffGame SET home_team_goal_1 = ?, home_team_goal_2 = ?, home_team_goal_3 = ?, home_team_goal_overtime = ? WHERE id = ?');
+            $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $game['id']);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $con->prepare('UPDATE Team SET goal_account_home_1 = goal_account_home_1 - ?, goal_account_home_2 = goal_account_home_2 - ?, goal_account_home_3 = goal_account_home_3 - ?, goal_account_overtime = goal_account_overtime - ? WHERE id = ?');
+            $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $team['id']);
+            $stmt->execute();
+            $stmt->close();
+        }
+        if(is_ai_team($con, $game['away_team_id'])) {
+            $team = get_team_by_id($con, $game['away_team_id']);
+
+            $goals = get_random_goals(array($team['goal_account_away_1'], $team['goal_account_away_2'], $team['goal_account_away_3'], $team['goal_account_overtime']));
+
+            $stmt = $con->prepare('UPDATE PlayoffGame SET away_team_goal_1 = ?, away_team_goal_2 = ?, away_team_goal_3 = ?, away_team_goal_overtime = ? WHERE id = ?');
+            $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $game['id']);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $con->prepare('UPDATE Team SET goal_account_away_1 = goal_account_away_1 - ?, goal_account_away_2 = goal_account_away_2 - ?, goal_account_away_3 = goal_account_away_3 - ?, goal_account_overtime = goal_account_overtime - ? WHERE id = ?');
+            $stmt->bind_param('iiiii', $goals[0], $goals[1], $goals[2], $goals[3], $team['id']);
+            $stmt->execute();
+            $stmt->close();
+        }
+    }
+}
+
 // update playdown team stats
 function update_playdown_stats($con, $playdown_game_day, $playdown)
 {
@@ -525,6 +687,32 @@ function update_playdown_stats($con, $playdown_game_day, $playdown)
         $stmt->bind_param('iiiiii', $stats['away_points'], $stats['away_win'], $stats['away_lose'], $stats['goals_away'], $stats['goals_home'], $game['away_team_id']);
         $stmt->execute();
         $stmt->close();
+    }
+}
+
+// update playoff team stats
+function update_playoff_stats($con, $playoff_game_day, $playoff_round, $playoff)
+{
+    $games = get_games_of_playoff_and_round_and_game_day($con, $playoff, $playoff_game_day, $playoff_round);
+    foreach($games as $game) {
+        $stats = compute_stats_for_game($game);
+
+        $stmt = $con->prepare('UPDATE PlayoffTeam SET win = win + ?, lose = lose + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
+        $stmt->bind_param('iiiii', $stats['home_win'], $stats['home_lose'], $stats['goals_home'], $stats['goals_away'], $game['home_team_id']);
+        $stmt->execute();
+        $stmt->close();
+
+        $stmt = $con->prepare('UPDATE PlayoffTeam SET win = win + ?, lose = lose + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
+        $stmt->bind_param('iiiii', $stats['away_win'], $stats['away_lose'], $stats['goals_away'], $stats['goals_home'], $game['away_team_id']);
+        $stmt->execute();
+        $stmt->close();
+
+        if($stats['home_win'] > 0) {
+            $stmt = $con->prepare('UPDATE PlayoffGame SET home_win = 1 WHERE id = ?');
+            $stmt->bind_param('i', $game['id']);
+            $stmt->execute();
+            $stmt->close();
+        }
     }
 }
 
