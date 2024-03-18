@@ -359,27 +359,80 @@ function to_next_day($con)
 
                 // playoff day by day
                 if($playoff != null) {
-                    team_ai_playoff($con, $playoff);
-
-                    // update teams
-                    $round = $playoff['last_round'] + 1;
-                    $game_day = $playoff['last_game_day'] + 1;
-                    update_playoff_stats($con, $game_day, $round, $playoff);
-
                     // move to next game day
-                    if($playoff['last_game_day' < 7]) {
+                    if($playoff['last_game_day'] < 7) {
+                        team_ai_playoff($con, $playoff);
+
+                        // update teams
+                        $round = $playoff['last_round'] + 1;
+                        $game_day = $playoff['last_game_day'] + 1;
+                        update_playoff_stats($con, $game_day, $round, $playoff);
+
                         $stmt = $con->prepare('UPDATE Playoff SET last_game_day = last_game_day + 1 WHERE id = ?');
                         $stmt->bind_param('i', $playoff['id']);
                         $stmt->execute();
                         $stmt->close();
                     } else {
-                        // TODO create next games
+                        // get result of last round
+                        $games = playoff_games_by_league($con, $playoff);
 
                         // move to next round
-                        $stmt = $con->prepare('UPDATE Playoff SET last_round = last_round + 1 WHERE id = ?');
+                        $stmt = $con->prepare('UPDATE Playoff SET last_round = last_round + 1, last_game_day = 0 WHERE id = ?');
                         $stmt->bind_param('i', $playoff['id']);
                         $stmt->execute();
                         $stmt->close();
+
+                        $playoff = get_playoff_by_league_id($con, $league['id']);
+                        
+                        // get winner teams
+                        $playoff_teams = array();
+                        for($i = 0; $i < count($games); $i += 7) {
+                            $score_team_1 = 0;
+                            $score_team_2 = 0;
+                            
+                            if($games[$i]['home_win'] > 0) $score_team_1++; else $score_team_2++;
+                            if($games[$i + 1]['home_win'] > 0) $score_team_2++; else $score_team_1++;
+                            if($games[$i + 2]['home_win'] > 0) $score_team_1++; else $score_team_2++;
+                            if($games[$i + 3]['home_win'] > 0) $score_team_2++; else $score_team_1++;
+                            if($games[$i + 4]['home_win'] > 0) $score_team_1++; else $score_team_2++;
+                            if($games[$i + 5]['home_win'] > 0) $score_team_2++; else $score_team_1++;
+                            if($games[$i + 6]['home_win'] > 0) $score_team_1++; else $score_team_2++;
+
+                            if($score_team_1 > $score_team_2) {
+                                $playoff_teams[] = get_team_by_id($con, $games[$i]['home_team_id']);
+                            } else {
+                                $playoff_teams[] = get_team_by_id($con, $games[$i]['away_team_id']);
+                            }
+                        }
+
+                        if(count($playoff_teams) > 1) {
+                            // create next games
+                            $max_game_days = count($playoff_teams) - 1;
+
+                            // create playoff games
+                            $round = $playoff['last_round'] + 1;
+                            for($i=0; $i < count($playoff_teams); $i+=2){
+                                create_playoff_games($con, 0, $playoff['id'], $round, $playoff_teams[$i]['id'], $playoff_teams[$i+1]['id']);
+                            }
+
+                            // delete old entries and create playoff teams
+                            $stmt = $con->prepare('DELETE FROM PlayoffTeam WHERE playoff_id = ?');
+                            $stmt->bind_param('i', $playoff['id']);
+                            $stmt->execute();
+                            $stmt->close();
+
+                            foreach($playoff_teams as $team_id) {
+                                $stmt = $con->prepare('INSERT INTO PlayoffTeam (playoff_id, team_id) VALUES (?, ?)');
+                                $stmt->bind_param('ii', $playoff['id'], $team_id);
+                                $stmt->execute();
+                                $stmt->close();
+                            }
+                        } else {
+                            // season is over!!!!!
+                            $stmt = $con->prepare('UPDATE State SET season_over = 1');
+                            $stmt->execute();
+                            $stmt->close();
+                        }
                     }
                 }
             }
@@ -486,10 +539,10 @@ function to_next_day($con)
             $playoff_id = mysqli_insert_id($con);
 
             // create playoff games
-            create_playoff_games($con, 0, $playoff_id, $playoff_teams[0], $playoff_teams[7]);
-            create_playoff_games($con, 0, $playoff_id, $playoff_teams[1], $playoff_teams[6]);
-            create_playoff_games($con, 0, $playoff_id, $playoff_teams[2], $playoff_teams[5]);
-            create_playoff_games($con, 0, $playoff_id, $playoff_teams[3], $playoff_teams[4]);
+            create_playoff_games($con, 0, $playoff_id, 1, $playoff_teams[0], $playoff_teams[7]);
+            create_playoff_games($con, 0, $playoff_id, 1, $playoff_teams[1], $playoff_teams[6]);
+            create_playoff_games($con, 0, $playoff_id, 1, $playoff_teams[2], $playoff_teams[5]);
+            create_playoff_games($con, 0, $playoff_id, 1, $playoff_teams[3], $playoff_teams[4]);
 
             // create playoff teams
             foreach($playoff_teams as $team_id) {
@@ -505,6 +558,13 @@ function to_next_day($con)
     $stmt->bind_param('ii', $state['day'], $state['week']);
     $stmt->execute();
     $stmt->close();
+}
+
+function to_next_season($con)
+{
+    // start next season
+
+    // TODO
 }
 
 // check if given team is not controlled by user
@@ -978,15 +1038,15 @@ function create_playdown_games($con, $combinations, $playdown_id, $last_game_day
     }
 }
 
-function create_playoff_games($con, $last_game_day, $playoff_id, $team_id_1, $team_id_2)
+function create_playoff_games($con, $last_game_day, $playoff_id, $round, $team_id_1, $team_id_2)
 {
     for($i = 0; $i < 7; ++$i) {
         $last_game_day++;
-        $stmt = $con->prepare('INSERT INTO PlayoffGame (game_day, playoff_id, home_team_id, away_team_id) VALUES (?, ?, ?, ?)');
+        $stmt = $con->prepare('INSERT INTO PlayoffGame (game_day, playoff_id, home_team_id, away_team_id, round) VALUES (?, ?, ?, ?, ?)');
         if($i % 2 == 0) {
-            $stmt->bind_param('iiii', $last_game_day, $playoff_id, $team_id_1, $team_id_2);
+            $stmt->bind_param('iiiii', $last_game_day, $playoff_id, $team_id_1, $team_id_2, $round);
         } else {
-            $stmt->bind_param('iiii', $last_game_day, $playoff_id, $team_id_2, $team_id_1);
+            $stmt->bind_param('iiiii', $last_game_day, $playoff_id, $team_id_2, $team_id_1, $round);
         }
         $stmt->execute();
         $stmt->close();

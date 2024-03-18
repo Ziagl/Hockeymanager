@@ -34,6 +34,10 @@ if(isset($_POST['compute_league'])) {
 		to_next_day($con);
 	}
 }
+//next season
+if(isset($_POST['next_season'])) {
+	to_next_season($con);
+}
 
 // get data from database
 
@@ -53,6 +57,13 @@ $result = $stmt->get_result();
 while($team = $result->fetch_array()) {
 	$teams[$team['id']] = $team;
 }
+$stmt->close();
+
+// get state from database
+$stmt = $con->prepare('SELECT * FROM State');
+$stmt->execute();
+$result = $stmt->get_result();
+$state = $result->fetch_array();
 $stmt->close();
 
 include 'content/header.php';
@@ -78,6 +89,11 @@ include 'content/header.php';
 	<form method="POST" action="">
 		<input type="submit" value="<?=$translator->__('Reset game',$language)?>">
 		<input type="hidden" name="reset_game" value="1"></input>
+	</form>
+	<p></p>
+	<form method="POST" action="">
+		<input type="submit" <?php if($state['season_over'] == 0) echo 'disabled' ?> value="<?=$translator->__('Next season',$language)?>">
+		<input type="hidden" name="next_season" value="1"></input>
 	</form>
 </div>
 <div>
