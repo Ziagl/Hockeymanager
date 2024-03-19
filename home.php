@@ -84,7 +84,7 @@ if(isset($_POST['game_id'])) {
 	}
 }
 ?>
-<h2>Dashboard</h2>
+<h2><?=$translator->__('Dashboard',$language)?></h2>
 <p><?=$translator->__('Welcome back',$language)?>, <?=$_SESSION['name']?>
 <?php // user has set dream team but has no team yet
 if($user['team_id'] == 0) { ?>
@@ -380,8 +380,8 @@ foreach($teams as $team) {
 	<table>
 		<tr>
 			<th>#</th>
-			<th>Team</th>
-			<th>Team</th>
+			<th><?=$translator->__('Team',$language)?></th>
+			<th><?=$translator->__('Team',$language)?></th>
 			<th><?=$translator->__('Result',$language)?></th>
 			<th><?=$translator->__('P1',$language)?></th>
 			<th><?=$translator->__('P2',$language)?></th>
@@ -421,8 +421,8 @@ foreach($teams as $team) {
 	<table>
 		<tr>
 			<th>#</th>
-			<th>Team</th>
-			<th>Team</th>
+			<th><?=$translator->__('Team',$language)?></th>
+			<th><?=$translator->__('Team',$language)?></th>
 			<th><?=$translator->__('Result',$language)?></th>
 			<th><?=$translator->__('P1',$language)?></th>
 			<th><?=$translator->__('P2',$language)?></th>

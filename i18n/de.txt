@@ -41,3 +41,6 @@ Compute league=Liga Saison berechnen
 Playdown schedule=Playdown Spielplan
 Playoff table=Playoff Tabelle
 Next season=Nächste Saison
+Email=Email
+Team=Team
+Dashboard=Dashboard

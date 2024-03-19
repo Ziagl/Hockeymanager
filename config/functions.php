@@ -491,7 +491,7 @@ function to_next_day($con)
                 $playdown_teams[] = $sub_teams[1]['id'];
 
                 // create playdown reference table
-                $max_game_days = count($playdown_teams) - 1;
+                $max_game_days = (count($playdown_teams) - 1) * 2;
                 $stmt = $con->prepare('INSERT INTO Playdown (league_id_up, league_id_down, max_game_days, last_game_day, team_id_1, team_id_2, team_id_3, team_id_4) VALUES (?, ?, ?, 0, ?, ?, ?, ?)');
                 $stmt->bind_param('iiiiiii', $league['id'], $sub_league['id'], $max_game_days, $playdown_teams[0], $playdown_teams[1], $playdown_teams[2], $playdown_teams[3]);
                 $stmt->execute();
@@ -560,11 +560,52 @@ function to_next_day($con)
     $stmt->close();
 }
 
-function to_next_season($con)
+function to_next_season($con, $goal_account_home, $goal_account_away, $goal_account_overtime)
 {
-    // start next season
+    // only for germany -> up and down of teams
+    $stmt = $con->prepare('SELECT * FROM Playdown');
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $playdowns = array();
+    while($playdown = $result->fetch_array()) {
+        $playdowns[] = $playdown;
+    }
+    $stmt->close();
 
-    // TODO
+    $league_id = 1; // 1, 2, 3 = germany
+    foreach($playdowns as $playdown) {
+        // get sorted list of teams
+        $stmt = $con->prepare('SELECT p.*, (p.goals_shot - p.goals_received) as goals FROM PlaydownTeam p WHERE p.playdown_id = ? ORDER BY p.points DESC, goals DESC');
+        $stmt->bind_param('i', $playdown['id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $teams = array();
+        while($team = $result->fetch_array()) {
+            $teams[] = $team;
+        }
+        $stmt->close();
+
+        //first two up, second two down
+        for($i=0; $i < count($teams); ++$i) {
+            if($i < 2) {
+                $stmt = $con->prepare('UPDATE Team SET league_id = ? WHERE id = ?');
+                $stmt->bind_param('ii', $league_id, $teams[$i]['team_id']);
+                $stmt->execute();
+                $stmt->close();
+            } else {
+                $next_league_id = $league_id + 1;
+                $stmt = $con->prepare('UPDATE Team SET league_id = ? WHERE id = ?');
+                $stmt->bind_param('ii', $next_league_id, $teams[$i]['team_id']);
+                $stmt->execute();
+                $stmt->close();
+            }
+        }
+
+        $league_id++;
+    }
+
+    // initialize
+    initialize_game($con, $goal_account_home, $goal_account_away, $goal_account_overtime);
 }
 
 // check if given team is not controlled by user
@@ -901,10 +942,8 @@ function compute_stats_for_game($game)
     return $return;
 }
 
-// initialize a new geam -> reset all values
-function initialize_game($con, $goal_account_home, $goal_account_away, $goal_account_overtime)
+function reset_state($con)
 {
-    // reset state
     $stmt = $con->prepare('DELETE FROM State');
     $stmt->execute();
     $stmt->close();
@@ -913,22 +952,13 @@ function initialize_game($con, $goal_account_home, $goal_account_away, $goal_acc
     $stmt->execute();
     $stmt->close();
 
-    $stmt = $con->prepare('INSERT INTO State (day, week) VALUES (0, 0)');
+    $stmt = $con->prepare('INSERT INTO State (day, week, season_over) VALUES (0, 0, 0)');
     $stmt->execute();
     $stmt->close();
+}
 
-    // reset teams
-    $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, lose = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ?');
-	$stmt->bind_param('iiiiiii', $goal_account_home, $goal_account_home, $goal_account_home, $goal_account_away, $goal_account_away, $goal_account_away, $goal_account_overtime);
-	$stmt->execute();
-    $stmt->close();
-
-    // reset league
-    $stmt = $con->prepare('UPDATE League SET last_game_day = 0');
-	$stmt->execute();
-    $stmt->close();
-
-    // reset playdowns
+function reset_playdown($con)
+{
     $stmt = $con->prepare('TRUNCATE TABLE Playdown');
     $stmt->execute();
     $stmt->close();
@@ -940,8 +970,10 @@ function initialize_game($con, $goal_account_home, $goal_account_away, $goal_acc
     $stmt = $con->prepare('TRUNCATE TABLE PlaydownTeam');
     $stmt->execute();
     $stmt->close();
+}
 
-    // reset playoffs
+function reset_playoff($con)
+{
     $stmt = $con->prepare('TRUNCATE TABLE Playoff');
     $stmt->execute();
     $stmt->close();
@@ -953,13 +985,29 @@ function initialize_game($con, $goal_account_home, $goal_account_away, $goal_acc
     $stmt = $con->prepare('TRUNCATE TABLE PlayoffTeam');
     $stmt->execute();
     $stmt->close();
+}
 
+function reset_league($con, $goal_account_home, $goal_account_away, $goal_account_overtime)
+{
+    // reset teams
+    $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, lose = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ?');
+	$stmt->bind_param('iiiiiii', $goal_account_home, $goal_account_home, $goal_account_home, $goal_account_away, $goal_account_away, $goal_account_away, $goal_account_overtime);
+	$stmt->execute();
+    $stmt->close();
+
+    // reset league
+    $stmt = $con->prepare('UPDATE League SET last_game_day = 0');
+	$stmt->execute();
+    $stmt->close();
+    
     // reset games
     $stmt = $con->prepare('TRUNCATE TABLE Game');
     $stmt->execute();
     $stmt->close();
+}
 
-    // create calendar
+function create_calendar($con)
+{
     // 1. get all leagues
     $stmt = $con->prepare('SELECT * FROM League');
     $stmt->execute();
@@ -1005,6 +1053,25 @@ function initialize_game($con, $goal_account_home, $goal_account_away, $goal_acc
         $stmt->execute();
         $stmt->close();
     }
+}
+
+// initialize a new geam -> reset all values
+function initialize_game($con, $goal_account_home, $goal_account_away, $goal_account_overtime)
+{
+    // reset state
+    reset_state($con);
+
+    // reset league
+    reset_league($con, $goal_account_home, $goal_account_away, $goal_account_overtime);
+
+    // reset playdowns
+    reset_playdown($con);
+
+    // reset playoffs
+    reset_playoff($con);
+
+    // create calendar
+    create_calendar($con);
 }
 
 // add game combinations to database

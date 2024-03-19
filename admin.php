@@ -36,7 +36,7 @@ if(isset($_POST['compute_league'])) {
 }
 //next season
 if(isset($_POST['next_season'])) {
-	to_next_season($con);
+	to_next_season($con, $MAX_GOALS_HOME, $MAX_GOALS_AWAY, $Max_GOALS_OVERTIME);
 }
 
 // get data from database
@@ -101,9 +101,9 @@ include 'content/header.php';
 	<table>
 		<tr>
 			<th><?=$translator->__('Username',$language)?></th>
-			<th>Email</th>
+			<th><?=$translator->__('Email',$language)?></th>
 			<th><?=$translator->__('Activation',$language)?></th>
-			<th>Team</th>
+			<th><?=$translator->__('Team',$language)?></th>
 			<th><?=$translator->__('Dream Team',$language)?></th>
 			<th><?=$translator->__('Admin',$language)?></th>
 		</tr>
