@@ -57,6 +57,22 @@ function get_team_by_points($con, $id, $type) // type...0 league, 1 playdown
     return $teams;
 }
 
+function get_team_by_points_of_league($con, $league_id)
+{
+    $stmt = $con->prepare('SELECT * FROM Team WHERE league_id = ? ORDER BY points DESC, win DESC');
+    $stmt->bind_param('i', $league_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $teams = array();
+    while($team = $result->fetch_array())
+    {
+        $teams[] = $team;
+    }
+    $stmt->close();
+
+    return $teams;
+}
+
 function get_league_standing($con, $league_id)
 {
     $stmt = $con->prepare('SELECT * FROM Team WHERE league_id = ? ORDER BY points DESC, win DESC');

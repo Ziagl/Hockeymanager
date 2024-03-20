@@ -13,6 +13,7 @@
 		<nav class="navtop">
 			<div>
 				<h1><a href="home.php">NHL Manager</a></h1>
+				<a href="statistics.php"><i class="fas fa-chart-simple"></i>Statistics</a>
 				<a href="profile.php"><i class="fas fa-user-circle"></i>Profile</a>
 <?php if($_SESSION['admin'] > 0) {?>
 				<a href="admin.php"><i class="fas fa-user-secret"></i>Admin</a>

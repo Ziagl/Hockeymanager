@@ -44,3 +44,4 @@ Next season=Nächste Saison
 Email=Email
 Team=Team
 Dashboard=Dashboard
+Statistics=Statistiken
