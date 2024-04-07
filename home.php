@@ -153,8 +153,15 @@ if($playoff != null) {
 	}
 }
 ?>
-<div>
-	<p><?=$translator->__('Upcoming matches',$language)?>:</p>
+<nav>
+	<div class="tab">
+		<button class="tablinks" onclick="openTab(event, 'Games')"><?=$translator->__('Upcoming matches',$language)?></button>
+		<button class="tablinks" onclick="openTab(event, 'Table')"><?=$translator->__('Table',$language)?></button>
+		<button class="tablinks" onclick="openTab(event, 'Plan')"><?=$translator->__('League schedule',$language)?></button>
+	</div>
+</nav>
+<div class="container">
+    <div id="Games" class="tabcontent">
 <?php
 foreach($games as $game)
 {
@@ -166,8 +173,8 @@ foreach($games as $game)
 		<table>
 			<tr>
 				<td></td>
-				<td><?=$home_team['name']?></td>
-				<td><?=$away_team['name']?></td>
+				<td><div class="image-text-wrapper"><img src='images/<?=$home_team['id']?>.png' class='team-logo'/><p><?=$home_team['name']?></p></div></td>
+				<td><div class="image-text-wrapper"><img src='images/<?=$away_team['id']?>.png' class='team-logo'/><p><?=$away_team['name']?></p></div></td>
 			</tr>
 			<tr>
 				<td>1. <?=$translator->__('Period',$language)?></td>
@@ -257,8 +264,7 @@ foreach($games as $game)
 </div>
 <?php if($playdown != null) {
 ?>
-<div>
-	<p><?=$translator->__('Playdown table',$language)?>:</p>
+<div id="Table" class="tabcontent">
 	<table>
 		<tr>
 			<th>#</th>
@@ -275,7 +281,7 @@ foreach($teams as $team) {
 	?>
 		<tr>
 			<td><?=++$index?></td>
-			<td><?=$team['name']?></td>
+			<td><img src='images/'.$team['id'].'.png'/><?=$team['name']?></td>
 			<td><?=$team['win']?></td>
 			<td><?=$team['lose']?></td>
 			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
@@ -287,8 +293,7 @@ foreach($teams as $team) {
 	</table>
 </div>
 <?php } else if ($playoff != null) { ?>
-<div>
-	<p><?=$translator->__('Playoff table',$language)?>:</p>
+<div id="Table" class="tabcontent">
 	<table>
 		<tr>
 			<th>#</th>
@@ -340,8 +345,7 @@ for($i = 0; $i < count($games); $i += 7) {
 	</table>
 </div>
 <?php } ?>
-<div>
-	<p><?=$translator->__('League table',$language)?>:</p>
+<div id="Table" class="tabcontent">
 	<table>
 		<tr>
 			<th>#</th>
@@ -355,10 +359,11 @@ for($i = 0; $i < count($games); $i += 7) {
 $teams = get_team_by_points($con, $user['team_id'], 0);
 $index = 0;
 foreach($teams as $team) {
+	$image = "images/".$team['id'].".png";
 	?>
 		<tr>
 			<td><?=++$index?></td>
-			<td><?=$team['name']?></td>
+			<td><div class="image-text-wrapper"><img src='<?=$image?>' class='team-logo'/><p><?=$team['name']?></p></div></td>
 			<td><?=$team['win']?></td>
 			<td><?=$team['lose']?></td>
 			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
@@ -410,8 +415,7 @@ foreach($teams as $team) {
 	<?php } ?>
 </div>
 <?php } ?>
-<div>
-	<p><?=$translator->__('League schedule',$language)?>:</p>
+<div id="Plan" class="tabcontent">
 	<?php
 		$games = get_games_by_league($con, $user_league);
 		foreach($games as $game_day) {
