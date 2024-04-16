@@ -27,9 +27,14 @@ $teams = get_team_by_points_of_league($con, $league['id']);
 $index = 0;
 foreach($teams as $team) {
 	?>
-		<tr>
+		<tr<?php
+	if($index == 0)
+		echo ' style="background-color: #0f0"';
+	if($index > count($teams) - 3)
+		echo ' style="background-color: #f00"';
+?>>
 			<td><?=++$index?></td>
-			<td><?=$team['name']?></td>
+			<td><div class='image-text-wrapper'><img src='images/<?=$team['id']?>.png' class='team-logo-small'/><p><?=$team['name']?></p></div></td>
 			<td><?=$team['win']?></td>
 			<td><?=$team['lose']?></td>
 			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>

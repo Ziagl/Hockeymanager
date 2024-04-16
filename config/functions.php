@@ -155,7 +155,7 @@ function get_playoff_game_by_id($con, $id)
 
 function get_games_by_league($con, $league)
 {
-    $stmt = $con->prepare('SELECT g.*, thome.name as "home", taway.name as "away", l.last_game_day FROM Game g JOIN Team thome ON thome.id = g.home_team_id JOIN Team taway ON taway.id = g.away_team_id JOIN League l ON thome.league_id = l.id WHERE l.id = ? ORDER BY g.game_day ASC');
+    $stmt = $con->prepare('SELECT g.*, thome.name as "home", thome.id as "home_id", taway.name as "away", taway.id as "away_id", l.last_game_day FROM Game g JOIN Team thome ON thome.id = g.home_team_id JOIN Team taway ON taway.id = g.away_team_id JOIN League l ON thome.league_id = l.id WHERE l.id = ? ORDER BY g.game_day ASC');
     $stmt->bind_param('i', $league['id']);
     $stmt->execute();
     $result = $stmt->get_result();

@@ -12,12 +12,12 @@
                 for (i = 0; i < tablinks.length; i++) {
                     tablinks[i].className = tablinks[i].className.replace(" active", "");
                 }
-                document.getElementById(tabName).style.display = "block";
+                document.getElementById(tabName).style.display = "flex";
                 evt.currentTarget.className += " active";
-                }
-                // Füge diese Zeile hinzu, um den ersten Tab beim Laden zu öffnen
-                document.addEventListener("DOMContentLoaded", function() {
-                document.getElementById("Games").style.display = "block";
+            }
+            // Füge diese Zeile hinzu, um den ersten Tab beim Laden zu öffnen
+            document.addEventListener("DOMContentLoaded", function() {
+                document.getElementById("Games").style.display = "flex";
                 document.getElementsByClassName("tablinks")[0].className += " active";
             });
         </script>

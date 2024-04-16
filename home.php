@@ -20,69 +20,6 @@ $state = get_game_day($con);
 // playoff or playdown
 $playdown = get_play_down($con, $user['team_id']);
 $playoff = get_play_off($con, $user['team_id']);
-
-// form response
-
-// save game data
-if(isset($_POST['game_id'])) {
-	$user_team = get_team_by_id($con, $user['team_id']);
-	$gah = array($user_team['goal_account_home_1'], $user_team['goal_account_home_2'], $user_team['goal_account_home_3']);
-	$gaa = array($user_team['goal_account_away_1'], $user_team['goal_account_away_2'], $user_team['goal_account_away_3']);
-	$gao = $user_team['goal_account_overtime'];
-
-	if($playdown != null) {
-		$statement = 'UPDATE PlaydownGame SET';
-		$game_day = get_playdown_game_by_id($con, $_POST['game_id']);
-	} else if ($playoff != null) {
-		$statement =  'UPDATE PlayoffGame SET';
-		$game_day = get_playoff_game_by_id($con, $_POST['game_id']);
-	} else {
-		$statement = 'UPDATE Game SET';
-		$game_day = get_game_by_id($con, $_POST['game_id']);
-	}
-	$periods = array('1', '2', '3');
-	$error = false;
-	foreach($periods as $period) {
-		if(isset($_POST['home_team_goal_'.$period])) {
-			$statement.= ' home_team_goal_'.$period.' = '.$_POST['home_team_goal_'.$period].',';
-			$diff = $_POST['home_team_goal_'.$period] - $game_day['home_team_goal_'.$period];
-			$gah[((int)$period) - 1] = $gah[((int)$period) - 1] - $diff;
-			if($user_team['goal_account_home_'.$period] - $diff < 0) $error = true;
-		}
-		if(isset($_POST['away_team_goal_'.$period])) {
-			$statement.= ' away_team_goal_'.$period.' = '.$_POST['away_team_goal_'.$period].',';
-			$diff = $_POST['away_team_goal_'.$period] - $game_day['away_team_goal_'.$period];
-			$gaa[((int)$period) - 1] = $gaa[((int)$period) - 1] - $diff;
-			if($user_team['goal_account_away_'.$period] - $diff < 0) $error = true;
-		}
-	}
-	if(isset($_POST['home_team_goal_overtime'])) {
-		$statement.= ' home_team_goal_overtime = '.$_POST['home_team_goal_overtime'].',';
-		$diff = $_POST['home_team_goal_overtime'] - $game_day['home_team_goal_overtime'];
-		$gao = $gao - $diff;
-		if($user_team['goal_account_overtime'] - $diff < 0) $error = true;
-	}
-	if(isset($_POST['away_team_goal_overtime'])) {
-		$statement.= ' away_team_goal_overtime = '.$_POST['away_team_goal_overtime'].',';
-		$diff = $_POST['away_team_goal_overtime'] - $game_day['away_team_goal_overtime'];
-		$gao = $gao - $diff;
-		if($user_team['goal_account_overtime'] - $diff < 0) $error = true;
-	}
-
-	if($error){
-		echo 'Invalid input.';
-	} else {
-		$statement = rtrim($statement, ",");
-		$statement.= ' WHERE id = ?';
-		$stmt = $con->prepare($statement);
-		$stmt->bind_param('i', $_POST['game_id']);
-		$stmt->execute();
-
-		$stmt = $con->prepare('UPDATE Team SET goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ? WHERE id = ?');
-		$stmt->bind_param('iiiiiiii', $gah[0], $gah[1], $gah[2], $gaa[0], $gaa[1], $gaa[2], $gao, $user['team_id']);
-		$stmt->execute();
-	}
-}
 ?>
 <h2><?=$translator->__('Dashboard',$language)?></h2>
 <p><?=$translator->__('Welcome back',$language)?>, <?=$_SESSION['name']?>
@@ -101,15 +38,15 @@ $user_team = get_team_by_id($con, $user['team_id']);
 	<table>
 		<tr>
 			<td><?=$translator->__('Goals home',$language)?>:</td>
-			<td><?=$user_team['goal_account_home_1']+$user_team['goal_account_home_2']+$user_team['goal_account_home_3']?> (<?=$user_team['goal_account_home_1']?>, <?=$user_team['goal_account_home_2']?>, <?=$user_team['goal_account_home_3']?>)</td>
+			<td><div id="goal_home"><?=$user_team['goal_account_home_1']+$user_team['goal_account_home_2']+$user_team['goal_account_home_3']?> (<?=$user_team['goal_account_home_1']?>, <?=$user_team['goal_account_home_2']?>, <?=$user_team['goal_account_home_3']?>)</div></td>
 		</tr>
 		<tr>
 			<td><?=$translator->__('Goals away',$language)?>:</td>
-			<td><?=$user_team['goal_account_away_1']+$user_team['goal_account_away_2']+$user_team['goal_account_away_3']?> (<?=$user_team['goal_account_away_1']?>, <?=$user_team['goal_account_away_2']?>, <?=$user_team['goal_account_away_3']?>)</td>
+			<td><div id="goal_away"><?=$user_team['goal_account_away_1']+$user_team['goal_account_away_2']+$user_team['goal_account_away_3']?> (<?=$user_team['goal_account_away_1']?>, <?=$user_team['goal_account_away_2']?>, <?=$user_team['goal_account_away_3']?>)</div></td>
 		</tr>
 		<tr>
 			<td><?=$translator->__('Goals overtime',$language)?>:</td>
-			<td><?=$user_team['goal_account_overtime']?></td>
+			<td><div id="goal_overtime"><?=$user_team['goal_account_overtime']?></div></td>
 		</tr>
 	</table>
 </div>
@@ -154,14 +91,14 @@ if($playoff != null) {
 }
 ?>
 <nav>
-	<div class="tab">
-		<button class="tablinks" onclick="openTab(event, 'Games')"><?=$translator->__('Upcoming matches',$language)?></button>
-		<button class="tablinks" onclick="openTab(event, 'Table')"><?=$translator->__('Table',$language)?></button>
-		<button class="tablinks" onclick="openTab(event, 'Plan')"><?=$translator->__('League schedule',$language)?></button>
+	<div class='tab'>
+		<button class='tablinks' onclick='openTab(event, "Games")'><?=$translator->__('Upcoming matches',$language)?></button>
+		<button class='tablinks' onclick='openTab(event, "Table")'><?=$translator->__('Table',$language)?></button>
+		<button class='tablinks' onclick='openTab(event, "Plan")'><?=$translator->__('League schedule',$language)?></button>
 	</div>
 </nav>
-<div class="container">
-    <div id="Games" class="tabcontent">
+<div class='container'>
+    <div id='Games' class='tabcontent' style='display: none;'>
 <?php
 foreach($games as $game)
 {
@@ -169,12 +106,12 @@ foreach($games as $game)
 	$away_team = get_team_by_id($con, $game['away_team_id']);
 	?>
 	<div class='game'>
-		<form method="POST" action="">
+		<form method='POST' action=''>
 		<table>
 			<tr>
 				<td></td>
-				<td><div class="image-text-wrapper"><img src='images/<?=$home_team['id']?>.png' class='team-logo'/><p><?=$home_team['name']?></p></div></td>
-				<td><div class="image-text-wrapper"><img src='images/<?=$away_team['id']?>.png' class='team-logo'/><p><?=$away_team['name']?></p></div></td>
+				<td><div class='image-text-wrapper'><img src='images/<?=$home_team['id']?>.png' class='team-logo-small'/><p><?=$home_team['name']?></p></div></td>
+				<td><div class='image-text-wrapper'><img src='images/<?=$away_team['id']?>.png' class='team-logo-small'/><p><?=$away_team['name']?></p></div></td>
 			</tr>
 			<tr>
 				<td>1. <?=$translator->__('Period',$language)?></td>
@@ -254,7 +191,6 @@ foreach($games as $game)
 			</tr>
 		</table>
 		<?php if($state['day'] == 0) { ?>
-		<input type='submit' value='<?=$translator->__('Save',$language)?>'></input>
 		<input type='hidden' name='game_id' value='<?=$game['id']?>'></input>
 		<?php } ?>
 		</form>
@@ -264,7 +200,7 @@ foreach($games as $game)
 </div>
 <?php if($playdown != null) {
 ?>
-<div id="Table" class="tabcontent">
+<div id='Table' class='tabcontent' style='display: none;'>
 	<table>
 		<tr>
 			<th>#</th>
@@ -281,7 +217,7 @@ foreach($teams as $team) {
 	?>
 		<tr>
 			<td><?=++$index?></td>
-			<td><img src='images/'.$team['id'].'.png'/><?=$team['name']?></td>
+			<td><img src='<?="images/".$team['id'].".png"?>'/><?=$team['name']?></td>
 			<td><?=$team['win']?></td>
 			<td><?=$team['lose']?></td>
 			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
@@ -293,7 +229,7 @@ foreach($teams as $team) {
 	</table>
 </div>
 <?php } else if ($playoff != null) { ?>
-<div id="Table" class="tabcontent">
+<div id='Table' class='tabcontent' style='display: none;'>
 	<table>
 		<tr>
 			<th>#</th>
@@ -345,7 +281,7 @@ for($i = 0; $i < count($games); $i += 7) {
 	</table>
 </div>
 <?php } ?>
-<div id="Table" class="tabcontent">
+<div id='Table' class='tabcontent' style='display: none;'>
 	<table>
 		<tr>
 			<th>#</th>
@@ -361,7 +297,12 @@ $index = 0;
 foreach($teams as $team) {
 	$image = "images/".$team['id'].".png";
 	?>
-		<tr>
+		<tr<?php
+	if($index == 0)
+		echo ' style="background-color: #0f0"';
+	if($index > 9)
+		echo ' style="background-color: #f00"';
+?>>
 			<td><?=++$index?></td>
 			<td><div class="image-text-wrapper"><img src='<?=$image?>' class='team-logo'/><p><?=$team['name']?></p></div></td>
 			<td><?=$team['win']?></td>
@@ -415,7 +356,7 @@ foreach($teams as $team) {
 	<?php } ?>
 </div>
 <?php } ?>
-<div id="Plan" class="tabcontent">
+<div id='Plan' class='tabcontent' style='display: none;'>
 	<?php
 		$games = get_games_by_league($con, $user_league);
 		foreach($games as $game_day) {
@@ -442,8 +383,8 @@ foreach($teams as $team) {
 	?>
 		<tr>
 			<td><?=$index?></td>
-			<td><?=$game['home']?></td>
-			<td><?=$game['away']?></td>
+			<td><img src='images/<?=$game['home_id']?>.png' class='team-logo-small'/><?=$game['home']?></td>
+			<td><img src='images/<?=$game['away_id']?>.png' class='team-logo-small'/><?=$game['away']?></td>
 			<td><?php if($game['game_day'] <= $game['last_game_day']) echo ($game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'] + $game['home_team_goal_overtime']) . " : " .  ($game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'] + $game['away_team_goal_overtime']);?></td>
 			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'] . " : " . $game['away_team_goal_1'];?></td>
 			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'] . " : " . $game['away_team_goal_2'];?></td>
@@ -454,6 +395,34 @@ foreach($teams as $team) {
 	</table>
 	<?php } ?>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+  $('input').on('input', function() {
+    var form = $(this).closest('form');
+    var formData = form.serialize();
+
+    $.ajax({
+      type: 'POST',
+      url: 'home_save.php',
+      data: formData,
+      success: function(response) {
+        console.log('Daten gespeichert: ' + response);
+
+		const userTeam = JSON.parse(response);
+		var home_sum = userTeam['goal_account_home_1'] + userTeam['goal_account_home_2'] + userTeam['goal_account_home_3'];
+		var away_sum = userTeam['goal_account_away_1'] + userTeam['goal_account_away_2'] + userTeam['goal_account_away_3'];
+		document.getElementById("goal_home").innerHTML = home_sum + " (" + userTeam['goal_account_home_1'] + ", " + userTeam['goal_account_home_2'] + ", " + userTeam['goal_account_home_3'] + ")";
+		document.getElementById("goal_away").innerHTML = away_sum + " (" + userTeam['goal_account_away_1'] + ", " + userTeam['goal_account_away_2'] + ", " + userTeam['goal_account_away_3'] + ")";
+		document.getElementById("goal_overtime").innerHTML = userTeam["goal_account_overtime"];
+      },
+      error: function() {
+        console.log('Fehler beim Speichern der Daten');
+      }
+    });
+  });
+});
+</script>
 <?php
 }
 include 'content/footer.php';
