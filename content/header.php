@@ -19,6 +19,7 @@
 				<nav class="navtop">
 					<a href="statistics.php"><i class="fas fa-chart-simple"></i>Statistics</a>
 					<a href="profile.php"><i class="fas fa-user-circle"></i>Profile</a>
+					<a href="help.php"><i class="fas fa-circle-info"></i>Help</a>
 <?php if($_SESSION['admin'] > 0) {?>
 					<a href="admin.php"><i class="fas fa-user-secret"></i>Admin</a>
 <?php }?>

@@ -296,14 +296,30 @@ $teams = get_team_by_points($con, $user['team_id'], 0);
 $index = 0;
 foreach($teams as $team) {
 	$image = "images/".$team['id'].".png";
+	$table_playoff = 8;
+	$table_relegate = 0;
+	if($user_league['name'] == 'NHL') {
+		$table_playoff = 16;
+	}
+	if($user_league['id'] == 1) {
+		$table_relegate = 2;
+	}
+	if($user_league['division'] > 1) {
+		$table_playoff = 2;
+		if($user_league['division'] < 3) {
+			$table_relegate = 2;
+		}
+	}
 	?>
-		<tr<?php
-	if($index == 0)
-		echo ' style="background-color: #0f0"';
-	if($index > 9)
-		echo ' style="background-color: #f00"';
-?>>
-			<td><?=++$index?></td>
+		<tr>
+			<td <?php 
+				if($index < $table_playoff) {
+					echo 'class="table-playoff"';
+				}
+				if($index >= count($teams) - $table_relegate) {
+					echo 'class="table-relegate"';
+				}
+			?>><?=++$index?></td>
 			<td><div class="image-text-wrapper"><img src='<?=$image?>' class='team-logo'/><p><?=$team['name']?></p></div></td>
 			<td><?=$team['win']?></td>
 			<td><?=$team['lose']?></td>

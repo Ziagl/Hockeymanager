@@ -2,8 +2,6 @@
 include_once 'config/functions.php';
 include 'content/session.php';
 
-// TODO
-
 include 'content/header.php';
 ?>
 <h2><?=$translator->__('Statistics',$language)?></h2>
@@ -26,14 +24,30 @@ include 'content/header.php';
 $teams = get_team_by_points_of_league($con, $league['id']);
 $index = 0;
 foreach($teams as $team) {
+	$table_playoff = 8;
+	$table_relegate = 0;
+	if($league['name'] == 'NHL') {
+		$table_playoff = 16;
+	}
+	if($league['id'] == 1) {
+		$table_relegate = 2;
+	}
+	if($league['division'] > 1) {
+		$table_playoff = 2;
+		if($league['division'] < 3) {
+			$table_relegate = 2;
+		}
+	}
 	?>
-		<tr<?php
-	if($index == 0)
-		echo ' style="background-color: #0f0"';
-	if($index > count($teams) - 3)
-		echo ' style="background-color: #f00"';
-?>>
-			<td><?=++$index?></td>
+		<tr>
+			<td <?php 
+				if($index < $table_playoff) {
+					echo 'class="table-playoff"';
+				}
+				if($index >= count($teams) - $table_relegate) {
+					echo 'class="table-relegate"';
+				}
+			?>><?=++$index?></td>
 			<td><div class='image-text-wrapper'><img src='images/<?=$team['id']?>.png' class='team-logo-small'/><p><?=$team['name']?></p></div></td>
 			<td><?=$team['win']?></td>
 			<td><?=$team['lose']?></td>

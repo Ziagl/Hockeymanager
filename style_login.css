@@ -1,15 +1,14 @@
-/* index.html */
 * {
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, "segoe ui", roboto, oxygen, ubuntu, cantarell, "fira sans", "droid sans", "helvetica neue", Arial, sans-serif;
     font-size: 16px;
 }
 body {
-    /*background-color: #435165;*/
-    background-image: url('images/login_image.jpg'); /* Ersetze 'pfad-zum-bild.jpg' mit dem Pfad zu deinem Bild */
-    background-size: cover; /* Stellt sicher, dass das Bild den gesamten Bereich abdeckt */
-    background-repeat: no-repeat; /* Verhindert das Wiederholen des Bildes */
-    background-position: center; /* Zentriert das Bild */
+    background-color: #e4e9ef !important;
+    background-image: url('images/login_image.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 .login {
     width: 400px;
