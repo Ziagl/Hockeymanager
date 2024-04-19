@@ -15,6 +15,7 @@ include 'content/header.php';
 		<tr>
 			<th>#</th>
 			<th><?=$translator->__('Name',$language)?></th>
+			<th><?=$translator->__('Username',$language)?></th>
 			<th><?=$translator->__('Win',$language)?></th>
 			<th><?=$translator->__('Lose',$language)?></th>
 			<th><?=$translator->__('Goals',$language)?></th>
@@ -47,8 +48,19 @@ foreach($teams as $team) {
 				if($index >= count($teams) - $table_relegate) {
 					echo 'class="table-relegate"';
 				}
-			?>><?=++$index?></td>
-			<td><div class='image-text-wrapper'><img src='images/<?=$team['id']?>.png' class='team-logo-small'/><p><?=$team['name']?></p></div></td>
+			?>><?=++$index?><?php
+				if($index <= $table_playoff && $league['division'] > 1) { ?>
+					<i class="fas fa-chevron-up table-playoff"></i>
+				<?php }
+				else if($index <= $table_playoff) { ?>
+					<i class="fas fa-trophy table-playoff"></i>
+				<?php }
+				if($index > count($teams) - $table_relegate) { ?>
+					<i class="fas fa-chevron-down table-relegate"></i>
+				<?php }
+			?></td>
+			<td><div class='image-text-wrapper'><img src='images/<?=$team['id']?>.png' class='team-logo'/><p><?=$team['name']?></p></div></td>
+			<td><?=$team['username']?></td>
 			<td><?=$team['win']?></td>
 			<td><?=$team['lose']?></td>
 			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
