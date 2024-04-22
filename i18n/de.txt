@@ -49,3 +49,5 @@ Help=Hilfe
 League table=Liga Tabelle
 Playdown schedule=Playdown Spielplan
 Playoff schedule=Playoff Spielplan
+Team selection=Teamauswahl
+Choose your dream team=Wähle dein Dream Team

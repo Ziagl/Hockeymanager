@@ -39,7 +39,7 @@ function get_playoff_team_by_id($con, $id)
 function get_team_by_points($con, $id, $type) // type...0 league, 1 playdown
 {
     if($type == 1) {
-        $stmt = $con->prepare('SELECT t.*, t1.name, u.username FROM PlaydownTeam t JOIN Team t1 ON t1.id = t.team_id LEFT JOIN User u ON u.team_id = t.team_id WHERE t.playdown_id = (SELECT id FROM Playdown WHERE team_id_1 = ? OR team_id_2 = ? OR team_id_3 = ? OR team_id_4 = ?) ORDER BY t.points DESC, t.win DESC');
+        $stmt = $con->prepare('SELECT t.*, t1.id as team_id, t1.name as team_name, u.username FROM PlaydownTeam t JOIN Team t1 ON t1.id = t.team_id LEFT JOIN User u ON u.team_id = t.team_id WHERE t.playdown_id = (SELECT id FROM Playdown WHERE team_id_1 = ? OR team_id_2 = ? OR team_id_3 = ? OR team_id_4 = ?) ORDER BY t.points DESC, t.win DESC');
         $stmt->bind_param('iiii', $id, $id, $id, $id);
     } else if($type == 0) {
         $stmt = $con->prepare('SELECT t.*, u.username FROM Team t LEFT JOIN User u ON u.team_id = t.id WHERE league_id LIKE (SELECT l.id FROM League l, Team t WHERE l.id = t.league_id AND t.id = ?) ORDER BY points DESC, win DESC');
@@ -172,6 +172,21 @@ function get_games_by_playdown($con, $playdown)
 {
     $stmt = $con->prepare('SELECT g.*, thome.name as "home", thome.id as "home_id",  taway.name as "away", taway.id as "away_id", p.last_game_day FROM PlaydownGame g JOIN Team thome ON thome.id = g.home_team_id JOIN Team taway ON taway.id = g.away_team_id JOIN Playdown p ON p.id = g.playdown_id WHERE playdown_id = ? ORDER BY game_day ASC');
     $stmt->bind_param('i', $playdown['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $games = array();
+    while($game = $result->fetch_array()){
+        $games[$game['game_day']][] = $game;
+    }
+    $stmt->close();
+
+    return $games;
+}
+
+function get_games_by_playoff($con, $playoff)
+{
+    $stmt = $con->prepare('SELECT g.*, thome.name as "home", thome.id as "home_id",  taway.name as "away", taway.id as "away_id", p.last_game_day FROM PlayoffGame g JOIN Team thome ON thome.id = g.home_team_id JOIN Team taway ON taway.id = g.away_team_id JOIN Playoff p ON p.id = g.playoff_id WHERE playoff_id = ? ORDER BY game_day ASC');
+    $stmt->bind_param('i', $playoff['id']);
     $stmt->execute();
     $result = $stmt->get_result();
     $games = array();
