@@ -7,10 +7,10 @@ include 'content/header.php';
 <h2><?=$translator->__('Statistics',$language)?></h2>
 <?php 
     $leagues = get_all_leagues($con);
-    foreach($leagues as $league) {
+    foreach($leagues as $league) {	
 ?>
 <div>
-    <p><?=$translator->__('League table',$language)?> <?=$league['name']?>:</p>
+    <p><?=$translator->__('League table',$language)?> <?=$league['name']?> (<?=$league['last_game_day']?>/<?=$league['max_game_days']?>):</p>
     <table>
 		<tr>
 			<th>#</th>
