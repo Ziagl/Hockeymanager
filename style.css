@@ -4,7 +4,7 @@ body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; margin: 0; p
 nav { padding: 15px 18px 15px 0; }
 nav ul { padding: 0; list-style: none; }
 nav ul li { display: inline; margin-right: 5px; }
-nav a { color: #fff; text-decoration: none; padding: 0 8px 0 0; }
+nav a { color: #fff; text-decoration: none; padding: 0 8px 0 0; white-space: nowrap; }
 h1 a { color: #fff; text-decoration: none; }
 .main-content { display: flex; flex-wrap: wrap; justify-content: space-between; }
 .card { background: #fff; padding: 20px; margin-bottom: 20px; width: calc(33% - 40px); }
@@ -24,10 +24,13 @@ footer { background: #333; color: #fff; text-align: center; padding: 10px; posit
 .fa-solid, .fas { font-weight: 900; padding: 0 4px 0 0; }
 .team-logo { max-width: 50px; max-height: 50px; width: auto; height: auto; margin-right: 10px; }
 .team-logo-small { max-width: 30px; max-height: 30px; width: auto; height: auto; margin-right: 10px; }
+.team-logo-big { max-width: 100px; max-height: 100px; width: auto; height: auto; margin-left: 10px; }
 .image-text-wrapper { display: flex; align-items: center; }
 .game { padding: 0 20px 20px 0; flex: 1 1 50%; box-sizing: border-box; }
 .table-playoff { color: #00a300; }
 .table-relegate { color: #f00; }
+.text-container { position: relative; padding-right: 100px; }
+.image-container { position: absolute; top: 0; right: 0; }
 
 @media (max-width: 600px) {
     .tabcontent {

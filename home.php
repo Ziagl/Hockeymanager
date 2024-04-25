@@ -21,11 +21,12 @@ $state = get_game_day($con);
 $playdown = get_play_down($con, $user['team_id']);
 $playoff = get_play_off($con, $user['team_id']);
 ?>
+<div class="text-container">
 <h2><?=$translator->__('Dashboard',$language)?></h2>
 <p><?=$translator->__('Welcome back',$language)?>, <?=$_SESSION['name']?>
 <?php // user has set dream team but has no team yet
 if($user['team_id'] == 0) { ?>
-!</p>
+!</p></div>
 <?=$translator->__('You are waiting for the approval for your team. Please come back later.',$language)?>
 <?php } else { 
 // user has a team
@@ -33,6 +34,9 @@ $user_team = get_team_by_id($con, $user['team_id']);
 // show goal stats
 ?>
 , <?=$translator->__('coach of',$language)?> <?=$user_team['name']?></p>
+<div class="image-container">
+<img src='<?="images/".$user_team['id'].".png"?>' class='team-logo-big'/>
+</div></div>
 <div>
 	<p><?=$translator->__('Goal stats',$language)?>:</p>
 	<table>
