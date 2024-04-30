@@ -34,17 +34,8 @@ footer { background: #333; color: #fff; text-align: center; padding: 10px; posit
 td.goal-container { text-align: center; }
 
 @media (max-width: 600px) {
-    .tabcontent {
-        flex: 1 1 100%;
-    }
-    .image-text-wrapper {
-        justify-content: center;
-    }
-    .image-text-wrapper p {
-        display: none;
-    }
-    th {
-        writing-mode: vertical-lr;
-        text-orientation: upright;
-    }
+    .tabcontent { flex: 1 1 100%; }
+    .image-text-wrapper { justify-content: center; }
+    .image-text-wrapper p { display: none; }
+    th { writing-mode: vertical-lr; text-orientation: upright; }
 }
