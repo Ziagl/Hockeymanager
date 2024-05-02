@@ -1,7 +1,6 @@
 <?php
 include_once 'config/functions.php';
 include 'content/session.php';
-
 include 'content/header.php';
 ?>
 <h2><?=$translator->__('Statistics',$language)?></h2>
@@ -16,10 +15,10 @@ include 'content/header.php';
 			<th>#</th>
 			<th><?=$translator->__('Name',$language)?></th>
 			<th><?=$translator->__('Username',$language)?></th>
-			<th><?=$translator->__('Win',$language)?></th>
-			<th><?=$translator->__('Lose',$language)?></th>
-			<th><?=$translator->__('Goals',$language)?></th>
-			<th><?=$translator->__('Points',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Win',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Lose',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Goals',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Points',$language)?></th>
 		</tr>
 <?php
 $teams = get_team_by_points_of_league($con, $league['id']);
@@ -61,10 +60,10 @@ foreach($teams as $team) {
 			?></td>
 			<td><div class='image-text-wrapper'><img src='images/<?=$team['id']?>.png' class='team-logo'/><p><?=$team['name']?></p></div></td>
 			<td><?=$team['username']?></td>
-			<td><?=$team['win']?></td>
-			<td><?=$team['lose']?></td>
-			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
-			<td><?=$team['points']?></td>
+			<td class='goal-container'><?=$team['win']?></td>
+			<td class='goal-container'><?=$team['lose']?></td>
+			<td class='goal-container'><?=$team['goals_shot'].":".$team['goals_received']?></td>
+			<td class='goal-container'><?=$team['points']?></td>
 		</tr>
 <?php
 }
