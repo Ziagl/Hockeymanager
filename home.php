@@ -52,6 +52,10 @@ $user_team = get_team_by_id($con, $user['team_id']);
 			<td><?=$translator->__('Goals overtime',$language)?>:</td>
 			<td><div id="goal_overtime"><?=$user_team['goal_account_overtime']?></div></td>
 		</tr>
+		<tr>
+			<td><?=$translator->__('Earned bonus goals',$language)?>:</td>
+			<td><div><?=$user_team['goal_account_bonus']?></div></td>
+		</tr>
 	</table>
 </div>
 <?php
