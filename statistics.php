@@ -15,9 +15,10 @@ include 'content/header.php';
 			<th>#</th>
 			<th><?=$translator->__('Name',$language)?></th>
 			<th><?=$translator->__('Username',$language)?></th>
-			<th class='horizontal-xs'><?=$translator->__('Win',$language)?></th>
-			<th class='horizontal-xs'><?=$translator->__('Lose',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Won',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Lost',$language)?></th>
 			<th class='horizontal-xs'><?=$translator->__('Goals',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('Difference',$language)?></th>
 			<th class='horizontal-xs'><?=$translator->__('Points',$language)?></th>
 		</tr>
 <?php
@@ -63,6 +64,7 @@ foreach($teams as $team) {
 			<td class='goal-container'><?=$team['win']?></td>
 			<td class='goal-container'><?=$team['lose']?></td>
 			<td class='goal-container'><?=$team['goals_shot'].":".$team['goals_received']?></td>
+			<td class='goal-container hidden-xs'><?=$team['goals_shot'] - $team['goals_received']?></td>
 			<td class='goal-container'><?=$team['points']?></td>
 		</tr>
 <?php

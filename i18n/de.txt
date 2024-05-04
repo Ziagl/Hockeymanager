@@ -1,9 +1,9 @@
 Name=Name
-Win=Gewonnen
-Draw=Unentschieden
-Lose=Verloren
+Won=Gewonnen
+Lost=Verloren
 Goals=Tore
 Points=Punkte
+Difference=Differenz
 Overtime=Overtime
 Period=Drittel
 Upcoming matches=Nächste Spiele
