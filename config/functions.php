@@ -39,10 +39,10 @@ function get_playoff_team_by_id($con, $id)
 function get_team_by_points($con, $id, $type) // type...0 league, 1 playdown
 {
     if($type == 1) {
-        $stmt = $con->prepare('SELECT t.*, t1.id as team_id, t1.name as team_name, u.username FROM PlaydownTeam t JOIN Team t1 ON t1.id = t.team_id LEFT JOIN User u ON u.team_id = t.team_id WHERE t.playdown_id = (SELECT id FROM Playdown WHERE team_id_1 = ? OR team_id_2 = ? OR team_id_3 = ? OR team_id_4 = ?) ORDER BY t.points DESC, t.win DESC');
+        $stmt = $con->prepare('SELECT t.*, t1.id as team_id, t1.name as team_name, u.username, (t.goals_shot - t.goals_received) as goals FROM PlaydownTeam t JOIN Team t1 ON t1.id = t.team_id LEFT JOIN User u ON u.team_id = t.team_id WHERE t.playdown_id = (SELECT id FROM Playdown WHERE team_id_1 = ? OR team_id_2 = ? OR team_id_3 = ? OR team_id_4 = ?) ORDER BY t.points DESC, goals DESC, t.win DESC');
         $stmt->bind_param('iiii', $id, $id, $id, $id);
     } else if($type == 0) {
-        $stmt = $con->prepare('SELECT t.*, u.username FROM Team t LEFT JOIN User u ON u.team_id = t.id WHERE league_id LIKE (SELECT l.id FROM League l, Team t WHERE l.id = t.league_id AND t.id = ?) ORDER BY points DESC, win DESC');
+        $stmt = $con->prepare('SELECT t.*, u.username, (t.goals_shot - t.goals_received) as goals FROM Team t LEFT JOIN User u ON u.team_id = t.id WHERE league_id LIKE (SELECT l.id FROM League l, Team t WHERE l.id = t.league_id AND t.id = ?) ORDER BY points DESC, goals DESC, win DESC');
         $stmt->bind_param('i', $id);
     }
     $stmt->execute();
@@ -59,7 +59,7 @@ function get_team_by_points($con, $id, $type) // type...0 league, 1 playdown
 
 function get_team_by_points_of_league($con, $league_id)
 {
-    $stmt = $con->prepare('SELECT t.*, u.username FROM Team t LEFT JOIN User u ON u.team_id = t.id WHERE league_id = ? ORDER BY points DESC, win DESC');
+    $stmt = $con->prepare('SELECT t.*, u.username, (t.goals_shot - t.goals_received) as goals FROM Team t LEFT JOIN User u ON u.team_id = t.id WHERE league_id = ? ORDER BY points DESC, goals DESC, win DESC');
     $stmt->bind_param('i', $league_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -75,7 +75,7 @@ function get_team_by_points_of_league($con, $league_id)
 
 function get_league_standing($con, $league_id)
 {
-    $stmt = $con->prepare('SELECT * FROM Team WHERE league_id = ? ORDER BY points DESC, win DESC');
+    $stmt = $con->prepare('SELECT *, (goals_shot - goals_received) as goals FROM Team WHERE league_id = ? ORDER BY points DESC, goals DESC, win DESC');
     $stmt->bind_param('i', $league_id);
     $stmt->execute();
     $result = $stmt->get_result();
