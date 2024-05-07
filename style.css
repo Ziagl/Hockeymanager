@@ -37,5 +37,6 @@ td.goal-container { text-align: center; }
     .tabcontent { flex: 1 1 100%; }
     .image-text-wrapper { justify-content: center; }
     .image-text-wrapper p { display: none; }
-    th { writing-mode: vertical-lr; text-orientation: upright; }
+    .hidden-xs { display: none !important; }
+    th.horizontal-xs { writing-mode: vertical-lr; text-orientation: upright; }
 }

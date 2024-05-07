@@ -52,6 +52,10 @@ $user_team = get_team_by_id($con, $user['team_id']);
 			<td><?=$translator->__('Goals overtime',$language)?>:</td>
 			<td><div id="goal_overtime"><?=$user_team['goal_account_overtime']?></div></td>
 		</tr>
+		<tr>
+			<td><?=$translator->__('Earned bonus goals',$language)?>:</td>
+			<td><div><?=$user_team['goal_account_bonus']?></div></td>
+		</tr>
 	</table>
 </div>
 <?php
@@ -301,10 +305,11 @@ for($i = 0; $i < count($games); $i += 7) {
 			<th>#</th>
 			<th><?=$translator->__('Name',$language)?></th>
 			<th><?=$translator->__('Username',$language)?></th>
-			<th><?=$translator->__('Win',$language)?></th>
-			<th><?=$translator->__('Lose',$language)?></th>
-			<th><?=$translator->__('Goals',$language)?></th>
-			<th><?=$translator->__('Points',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Won',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Lost',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Goals',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('Difference',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Points',$language)?></th>
 		</tr>
 <?php
 $teams = get_team_by_points($con, $user['team_id'], 0);
@@ -347,10 +352,11 @@ foreach($teams as $team) {
 			?></td>
 			<td><div class="image-text-wrapper"><img src='<?=$image?>' class='team-logo'/><p><?=$team['name']?></p></div></td>
 			<td><?=$team['username']?></td>
-			<td><?=$team['win']?></td>
-			<td><?=$team['lose']?></td>
-			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
-			<td><?=$team['points']?></td>
+			<td class='goal-container'><?=$team['win']?></td>
+			<td class='goal-container'><?=$team['lose']?></td>
+			<td class='goal-container'><?=$team['goals_shot'].":".$team['goals_received']?></td>
+			<td class='goal-container hidden-xs'><?=$team['goals_shot'] - $team['goals_received']?></td>
+			<td class='goal-container'><?=$team['points']?></td>
 		</tr>
 <?php
 }
@@ -378,10 +384,10 @@ if($playoff != null) {
 			<th><?=$translator->__('Team',$language)?></th>
 			<th><?=$translator->__('Team',$language)?></th>
 			<th><?=$translator->__('Result',$language)?></th>
-			<th><?=$translator->__('P1',$language)?></th>
-			<th><?=$translator->__('P2',$language)?></th>
-			<th><?=$translator->__('P3',$language)?></th>
-			<th><?=$translator->__('Ot',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('P1',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('P2',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('P3',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('Ot',$language)?></th>
 		</tr>
 	<?php
 		$index = 0;
@@ -394,15 +400,16 @@ if($playoff != null) {
 			<td><?=$index?></td>
 			<td><img src='images/<?=$game['home_id']?>.png' class='team-logo-small'/><?=$game['home']?></td>
 			<td><img src='images/<?=$game['away_id']?>.png' class='team-logo-small'/><?=$game['away']?></td>
-			<td><?php if($game['game_day'] <= $game['last_game_day']) echo ($game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'] + $game['home_team_goal_overtime']) . " : " .  ($game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'] + $game['away_team_goal_overtime']);?></td>
-			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'] . " : " . $game['away_team_goal_1'];?></td>
-			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'] . " : " . $game['away_team_goal_2'];?></td>
-			<td><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'] . " : " . $game['away_team_goal_3'];?></td>
-			<td><?php if($game['game_day'] <= $game['last_game_day'] && ($game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3']) == ($game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'])) echo $game['home_team_goal_overtime'] . " : " . $game['away_team_goal_overtime'];?></td>		
+			<td class='goal-container'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo ($game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'] + ($home_goals == $away_goals ? $game['home_team_goal_overtime'] : 0) + $game['home_team_penalty_win']) . ($game['home_team_penalty_win'] == 1 ? '*' : '') . " : " .  ($game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'] + ($home_goals == $away_goals ? $game['away_team_goal_overtime'] : 0) + $game['away_team_penalty_win']) . ($game['away_team_penalty_win'] == 1 ? '*' : '');?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'] . " : " . $game['away_team_goal_1'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'] . " : " . $game['away_team_goal_2'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'] . " : " . $game['away_team_goal_3'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day'] && $home_goals == $away_goals) echo $game['home_team_goal_overtime'] . " : " . $game['away_team_goal_overtime'];?></span></td>		
 		</tr>
 	<?php } ?>
 	</table>
 	<?php } ?>
+	<p>* <?=$translator->__('victory after penalty shootout',$language)?></p>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -416,8 +423,6 @@ $(document).ready(function(){
       url: 'home_save.php',
       data: formData,
       success: function(response) {
-        console.log('Daten gespeichert: ' + response);
-
 		const userTeam = JSON.parse(response);
 		var home_sum = userTeam['goal_account_home_1'] + userTeam['goal_account_home_2'] + userTeam['goal_account_home_3'];
 		var away_sum = userTeam['goal_account_away_1'] + userTeam['goal_account_away_2'] + userTeam['goal_account_away_3'];
@@ -426,7 +431,7 @@ $(document).ready(function(){
 		document.getElementById("goal_overtime").innerHTML = userTeam["goal_account_overtime"];
       },
       error: function() {
-        console.log('Fehler beim Speichern der Daten');
+        console.log('Error while saving data.');
       }
     });
   });
