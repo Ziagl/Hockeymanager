@@ -235,7 +235,7 @@ foreach($teams as $team) {
 	?>
 		<tr>
 			<td><?=++$index?></td>
-			<td><div class="image-text-wrapper"><img src='<?="images/".$team['team_id'].".png"?>' class='team-logo'/><?=$team['team_name']?>test</div></td>
+			<td><div class="image-text-wrapper"><img src='<?="images/".$team['team_id'].".png"?>' class='team-logo'/><?=$team['team_name']?></div></td>
 			<td><?=$team['win']?></td>
 			<td><?=$team['lose']?></td>
 			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
