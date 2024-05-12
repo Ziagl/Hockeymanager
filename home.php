@@ -54,7 +54,7 @@ $user_team = get_team_by_id($con, $user['team_id']);
 		</tr>
 		<tr>
 			<td><?=$translator->__('Earned bonus goals',$language)?>:</td>
-			<td><div><?=$user_team['goal_account_bonus']?></div></td>
+			<td><div><?=$user_team['goal_account_bonus_home'] + $user_team['goal_account_bonus_away']?> (<?=$user_team['goal_account_bonus_home']?>, <?=$user_team['goal_account_bonus_away']?>)</div></td>
 		</tr>
 	</table>
 </div>

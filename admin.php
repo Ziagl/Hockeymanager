@@ -38,6 +38,15 @@ if(isset($_POST['compute_league'])) {
 if(isset($_POST['next_season'])) {
 	to_next_season($con, $MAX_GOALS_HOME, $MAX_GOALS_AWAY, $Max_GOALS_OVERTIME);
 }
+//bonus_goals
+if(isset($_POST['bonus_goals'])) {
+	$win_leader = isset($_POST['win_leader'])?1:0;
+	$win_five_times = isset($_POST['win_five_times'])?1:0;
+	$win_five_goals = isset($_POST['win_five_goals'])?1:0;
+	$stmt = $con->prepare('UPDATE State SET win_leader = ?, win_five_times = ?, win_five_goals = ? WHERE id = 1');
+	$stmt->bind_param('iii', $win_leader, $win_five_times, $win_five_goals);
+	$stmt->execute();
+}
 
 // get data from database
 
@@ -94,6 +103,24 @@ include 'content/header.php';
 	<form method="POST" action="">
 		<input type="submit" <?php if($state['season_over'] == 0) echo 'disabled' ?> value="<?=$translator->__('Next season',$language)?>">
 		<input type="hidden" name="next_season" value="1"></input>
+	</form>
+</div>
+<div>
+	<p><?=$translator->__('Bonus goals', $language)?>:</p>
+	<form method="POST" action="">
+		<div>
+			<input type="checkbox" name="win_leader" id="win_leader" <?php if($state['win_leader']) echo 'checked'; ?> onchange="this.form.submit()" />
+			<label for="win_leader">Sieg gegen Tabellenführer (+1 Heim)</label>
+		</div>
+		<div>
+			<input type="checkbox" name="win_five_times" id="win_five_times" <?php if($state['win_five_times']) echo 'checked'; ?> onchange="this.form.submit()" />
+			<label for="win_five_times">5 Siege in Folge (+2 Auswärts)</label>
+		</div>
+		<div>
+			<input type="checkbox" name="win_five_goals" id="win_five_goals" <?php if($state['win_five_goals']) echo 'checked'; ?> onchange="this.form.submit()" />
+			<label for="win_five_goals">Sie mit 5 Toren Unterschied (+1 Auswärts)</label>
+		</div>
+		<input type="hidden" name="bonus_goals" value="1"></input>
 	</form>
 </div>
 <div>

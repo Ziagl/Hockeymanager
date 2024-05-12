@@ -53,3 +53,5 @@ Team selection=Teamauswahl
 Choose your dream team=Wähle dein Dream Team
 victory after penalty shootout=Sieg nach Penaltyschießen
 Earned bonus goals=Verdiente Bonustore
+Bonus goals=Bonustore
+Save=Speichern

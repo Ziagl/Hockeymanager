@@ -1003,7 +1003,7 @@ function reset_state($con)
     $stmt->execute();
     $stmt->close();
 
-    $stmt = $con->prepare('INSERT INTO State (day, week, season_over) VALUES (0, 0, 0)');
+    $stmt = $con->prepare('INSERT INTO State (day, week, season_over, win_leader, win_five_times, win_five_goals) VALUES (0, 0, 0, 1, 1, 1)');
     $stmt->execute();
     $stmt->close();
 }
