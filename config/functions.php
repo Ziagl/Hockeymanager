@@ -861,6 +861,12 @@ function update_playoff_stats($con, $playoff_game_day, $playoff_round, $playoff)
 // get values from last week into team stats
 function update_stats_of_league($con, $week, $league)
 {
+    $state = get_game_day($con);
+    if($state['win_leader'] == 1)
+    {
+        // TODO for leader win
+    }
+
     $games = get_games_of_week($con, $league);
     foreach($games as $game) {
         $stats = compute_stats_for_game($con, $game);
@@ -874,6 +880,31 @@ function update_stats_of_league($con, $week, $league)
         $stmt->bind_param('iiiiii', $stats['away_points'], $stats['away_win'], $stats['away_lose'], $stats['goals_away'], $stats['goals_home'], $game['away_team_id']);
         $stmt->execute();
         $stmt->close();
+
+        // adds an away goal if team won with 5 or more goals difference
+        if($state['win_five_goals'] == 1)
+        {
+            if($stats['home_win'])
+            {
+                if($stats['goals_home'] - $stats['goals_away'] >= 5)
+                {
+                    $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_away = goal_account_bonus_away + 1 WHERE id = ?');
+                    $stmt->bind_param('i', $game['home_team_id']);
+                    $stmt->execute();
+                    $stmt->close();
+                }
+            }
+            if($stats['away_win'])
+            {
+                if($stats['goals_away'] - $stats['goals_home'] >= 5)
+                {
+                    $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_away = goal_account_bonus_away + 1 WHERE id = ?');
+                    $stmt->bind_param('i', $game['away_team_id']);
+                    $stmt->execute();
+                    $stmt->close();
+                }
+            }
+        }
     }
 }
 
