@@ -46,12 +46,14 @@ if(isset($_POST['game_id'])) {
 			$statement.= ' home_team_goal_'.$period.' = '.$_POST['home_team_goal_'.$period].',';
 			$diff = $_POST['home_team_goal_'.$period] - $game_day['home_team_goal_'.$period];
 			$gah[((int)$period) - 1] = $gah[((int)$period) - 1] - $diff;
+			if($_POST['home_team_goal_'.$period] > 10 || $_POST['home_team_goal_'.$period] < 0) $error = true;
 			if($user_team['goal_account_home_'.$period] - $diff < 0) $error = true;
 		}
 		if(isset($_POST['away_team_goal_'.$period])) {
 			$statement.= ' away_team_goal_'.$period.' = '.$_POST['away_team_goal_'.$period].',';
 			$diff = $_POST['away_team_goal_'.$period] - $game_day['away_team_goal_'.$period];
 			$gaa[((int)$period) - 1] = $gaa[((int)$period) - 1] - $diff;
+			if($_POST['away_team_goal_'.$period] > 10 || $_POST['away_team_goal_'.$period] < 0) $error = true;
 			if($user_team['goal_account_away_'.$period] - $diff < 0) $error = true;
 		}
 	}
@@ -59,17 +61,18 @@ if(isset($_POST['game_id'])) {
 		$statement.= ' home_team_goal_overtime = '.$_POST['home_team_goal_overtime'].',';
 		$diff = $_POST['home_team_goal_overtime'] - $game_day['home_team_goal_overtime'];
 		$gao = $gao - $diff;
-		if($user_team['goal_account_overtime'] - $diff < 0) $error = true;
+		if($user_team['goal_account_overtime'] - $diff < 0 || $_POST['home_team_goal_overtime'] > 1) $error = true;
 	}
 	if(isset($_POST['away_team_goal_overtime'])) {
 		$statement.= ' away_team_goal_overtime = '.$_POST['away_team_goal_overtime'].',';
 		$diff = $_POST['away_team_goal_overtime'] - $game_day['away_team_goal_overtime'];
 		$gao = $gao - $diff;
-		if($user_team['goal_account_overtime'] - $diff < 0) $error = true;
+		if($user_team['goal_account_overtime'] - $diff < 0 || $_POST['away_team_goal_overtime'] > 1) $error = true;
 	}
 
 	if($error){
-		echo 'Invalid input.';
+		http_response_code(400);
+		exit;
 	} else {
 		$statement = rtrim($statement, ",");
 		$statement.= ' WHERE id = ?';

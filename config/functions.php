@@ -660,7 +660,7 @@ function get_random_goals($max_array)
     $goals = array();
 
     // generate random goals
-    for($i=0; $i<4; ++$i) {
+    for($i=0; $i<3; ++$i) {
         $random_value = random_int(0, 99);
         if ($random_value >= 50 && $random_value < 80) {
             $goals[] = 1;
@@ -671,6 +671,16 @@ function get_random_goals($max_array)
         } else {
             $goals[] = 0;
         }
+    }
+    //special case for overtime
+    $random_value = random_int(0,99);
+    if($random_value >= 50)
+    {
+        $goals[] = 1;
+    }
+    else
+    {
+        $goals[] = 0;
     }
 
     // check against max values
@@ -1058,7 +1068,7 @@ function create_calendar($con)
     }
     $stmt->close();
 
-    // 2. get teams of leage
+    // 2. get teams of league
     foreach($leagues as $league)
     {
         $teams = array();
