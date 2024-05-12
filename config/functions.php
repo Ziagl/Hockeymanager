@@ -862,12 +862,16 @@ function update_playoff_stats($con, $playoff_game_day, $playoff_round, $playoff)
 function update_stats_of_league($con, $week, $league)
 {
     $state = get_game_day($con);
+    $games = get_games_of_week($con, $league);
+
+    $leader = -1;   // id of leading team or -1
     if($state['win_leader'] == 1)
     {
-        // TODO for leader win
+        // set id of current league leader team
+        $teams = get_team_by_points($con, $games[0]['home_team_id'], 0);
+        $leader = $teams[0]['id'];
     }
 
-    $games = get_games_of_week($con, $league);
     foreach($games as $game) {
         $stats = compute_stats_for_game($con, $game);
 
@@ -880,6 +884,25 @@ function update_stats_of_league($con, $week, $league)
         $stmt->bind_param('iiiiii', $stats['away_points'], $stats['away_win'], $stats['away_lose'], $stats['goals_away'], $stats['goals_home'], $game['away_team_id']);
         $stmt->execute();
         $stmt->close();
+
+        // adds a home goal if team won against leader
+        if($state['win_leader'] == 1)
+        {
+            if($stats['home_win'] && $game['away_team_id'] == $leader)
+            {
+                $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_home = goal_account_bonus_home + 1 WHERE id = ?');
+                $stmt->bind_param('i', $game['home_team_id']);
+                $stmt->execute();
+                $stmt->close();
+            }
+            if($stats['away_win'] && $game['home_team_id'] == $leader)
+            {
+                $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_home = goal_account_bonus_home + 1 WHERE id = ?');
+                $stmt->bind_param('i', $game['away_team_id']);
+                $stmt->execute();
+                $stmt->close();
+            }
+        }
 
         // adds an away goal if team won with 5 or more goals difference
         if($state['win_five_goals'] == 1)
@@ -1072,7 +1095,7 @@ function reset_playoff($con)
 function reset_league($con, $goal_account_home, $goal_account_away, $goal_account_overtime)
 {
     // reset teams
-    $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, lose = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ?');
+    $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, lose = 0, goal_account_bonus_home = 0, goal_account_bonus_away = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ?');
 	$stmt->bind_param('iiiiiii', $goal_account_home, $goal_account_home, $goal_account_home, $goal_account_away, $goal_account_away, $goal_account_away, $goal_account_overtime);
 	$stmt->execute();
     $stmt->close();
