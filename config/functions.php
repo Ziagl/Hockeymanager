@@ -816,7 +816,7 @@ function update_playdown_stats($con, $playdown_game_day, $playdown)
 {
     $games = get_games_of_playdown_and_game_day($con, $playdown, $playdown_game_day);
     foreach($games as $game) {
-        $stats = compute_stats_for_game($con, $game);
+        $stats = compute_stats_for_game($con, $game, 'PlaydownGame');
 
         $stmt = $con->prepare('UPDATE PlaydownTeam SET points = points + ?, win = win + ?, lose = lose + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
         $stmt->bind_param('iiiiii', $stats['home_points'], $stats['home_win'], $stats['home_lose'], $stats['goals_home'], $stats['goals_away'], $game['home_team_id']);
@@ -835,7 +835,7 @@ function update_playoff_stats($con, $playoff_game_day, $playoff_round, $playoff)
 {
     $games = get_games_of_playoff_and_round_and_game_day($con, $playoff, $playoff_game_day, $playoff_round);
     foreach($games as $game) {
-        $stats = compute_stats_for_game($con, $game);
+        $stats = compute_stats_for_game($con, $game, 'PlayoffGame');
 
         $stmt = $con->prepare('UPDATE PlayoffTeam SET win = win + ?, lose = lose + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
         $stmt->bind_param('iiiii', $stats['home_win'], $stats['home_lose'], $stats['goals_home'], $stats['goals_away'], $game['home_team_id']);
@@ -871,7 +871,7 @@ function update_stats_of_league($con, $week, $league)
     }
 
     foreach($games as $game) {
-        $stats = compute_stats_for_game($con, $game);
+        $stats = compute_stats_for_game($con, $game, 'Game');
 
         $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, lose = lose + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
         $stmt->bind_param('iiiiii', $stats['home_points'], $stats['home_win'], $stats['home_lose'], $stats['goals_home'], $stats['goals_away'], $game['home_team_id']);
@@ -982,7 +982,7 @@ function update_stats_of_league($con, $week, $league)
     }
 }
 
-function compute_stats_for_game($con, $game)
+function compute_stats_for_game($con, $game, $tableName)
 {
     // home team
     $goals_home = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'];
@@ -1042,7 +1042,7 @@ function compute_stats_for_game($con, $game)
                 $home_points = 2;
                 $away_points = 1;
 
-                $stmt = $con->prepare('UPDATE Game SET home_team_penalty_win = 1 WHERE id = ?');
+                $stmt = $con->prepare('UPDATE '.$tableName.' SET home_team_penalty_win = 1 WHERE id = ?');
                 $stmt->bind_param('i', $game['id']);
                 $stmt->execute();
                 $stmt->close();
@@ -1057,7 +1057,7 @@ function compute_stats_for_game($con, $game)
                 $home_points = 1;
                 $away_points = 2;
 
-                $stmt = $con->prepare('UPDATE Game SET away_team_penalty_win = 1 WHERE id = ?');
+                $stmt = $con->prepare('UPDATE '.$tableName.' SET away_team_penalty_win = 1 WHERE id = ?');
                 $stmt->bind_param('i', $game['id']);
                 $stmt->execute();
                 $stmt->close();
