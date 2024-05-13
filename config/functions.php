@@ -892,7 +892,7 @@ function update_stats_of_league($con, $week, $league)
 
                 if($team['win_counter'] == 4)
                 {
-                    $stmt = $con->prepare('UPDATE Team SET win_counter = 0, goal_account_bonus_away = goal_account_bonus_away + 2 WHERE id = ?');
+                    $stmt = $con->prepare('UPDATE Team SET win_counter = 0, goal_account_bonus_away = goal_account_bonus_away + 2, goal_account_away_1 = goal_account_away_1 + 2 WHERE id = ?');
                     $stmt->bind_param('i', $team['id']);
                     $stmt->execute();
                     $stmt->close();
@@ -916,7 +916,7 @@ function update_stats_of_league($con, $week, $league)
 
                 if($team['win_counter'] == 4)
                 {
-                    $stmt = $con->prepare('UPDATE Team SET win_counter = 0, goal_account_bonus_away = goal_account_bonus_away + 2 WHERE id = ?');
+                    $stmt = $con->prepare('UPDATE Team SET win_counter = 0, goal_account_bonus_away = goal_account_bonus_away + 2, goal_account_away_1 = goal_account_away_1 + 2 WHERE id = ?');
                     $stmt->bind_param('i', $team['id']);
                     $stmt->execute();
                     $stmt->close();
@@ -941,14 +941,14 @@ function update_stats_of_league($con, $week, $league)
         {
             if($stats['home_win'] == 1 && $game['away_team_id'] == $leader)
             {
-                $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_home = goal_account_bonus_home + 1 WHERE id = ?');
+                $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_home = goal_account_bonus_home + 1, goal_account_home_1 = goal_account_home_1 + 1 WHERE id = ?');
                 $stmt->bind_param('i', $game['home_team_id']);
                 $stmt->execute();
                 $stmt->close();
             }
             if($stats['away_win'] == 1 && $game['home_team_id'] == $leader)
             {
-                $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_home = goal_account_bonus_home + 1 WHERE id = ?');
+                $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_home = goal_account_bonus_home + 1, goal_account_home_1 = goal_account_home_1 + 1 WHERE id = ?');
                 $stmt->bind_param('i', $game['away_team_id']);
                 $stmt->execute();
                 $stmt->close();
@@ -962,7 +962,7 @@ function update_stats_of_league($con, $week, $league)
             {
                 if($stats['goals_home'] - $stats['goals_away'] >= 5)
                 {
-                    $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_away = goal_account_bonus_away + 1 WHERE id = ?');
+                    $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_away = goal_account_bonus_away + 1, goal_account_away_1 = goal_account_away_1 + 1 WHERE id = ?');
                     $stmt->bind_param('i', $game['home_team_id']);
                     $stmt->execute();
                     $stmt->close();
@@ -972,7 +972,7 @@ function update_stats_of_league($con, $week, $league)
             {
                 if($stats['goals_away'] - $stats['goals_home'] >= 5)
                 {
-                    $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_away = goal_account_bonus_away + 1 WHERE id = ?');
+                    $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_away = goal_account_bonus_away + 1, goal_account_away_1 = goal_account_away_1 + 1 WHERE id = ?');
                     $stmt->bind_param('i', $game['away_team_id']);
                     $stmt->execute();
                     $stmt->close();
