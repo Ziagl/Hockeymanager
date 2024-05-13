@@ -200,8 +200,8 @@ function get_games_by_playoff($con, $playoff)
 
 function get_playdown_by_league_id($con, $league_id)
 {
-    $stmt = $con->prepare('SELECT * FROM Playdown WHERE league_id_up = ? OR league_id_down = ?');
-    $stmt->bind_param('ii', $league_id, $league_id);
+    $stmt = $con->prepare('SELECT * FROM Playdown WHERE league_id_up = ?');
+    $stmt->bind_param('i', $league_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $playdown = $result->fetch_array();
@@ -381,8 +381,8 @@ function to_next_day($con)
                     if($next_game_day <= $playdown['max_game_days']) {
                         update_playdown_stats($con, $next_game_day, $playdown);
 
-                        $stmt = $con->prepare('UPDATE Playdown SET last_game_day = ? WHERE id = ?');
-                        $stmt->bind_param('ii', $next_game_day, $playdown['id']);
+                        $stmt = $con->prepare('UPDATE Playdown SET last_game_day = last_game_day + 1 WHERE id = ?');
+                        $stmt->bind_param('i', $playdown['id']);
                         $stmt->execute();
                         $stmt->close();
                     }
@@ -488,7 +488,6 @@ function to_next_day($con)
                 if($league['last_game_day'] == $league['max_game_days']) {
                     // if country is germany
                     if($league['country_id'] == 1) {
-                        //$playdown = get_playdown_by_league_id($con, $league['id']);
                         if($playdown == null) {
                             $sub_league = find_sub_league($con, $league);
                             if($sub_league) {
@@ -499,7 +498,6 @@ function to_next_day($con)
 
                     // calculate playoffs
                     if($league['division'] == 1) {
-                        //$playoff = get_playoff_by_league_id($con, $league['id']);
                         if($playoff == null) {
                             $leagues_to_create_playoff[] = $league;
                         }
