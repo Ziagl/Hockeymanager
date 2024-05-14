@@ -475,6 +475,9 @@ function to_next_day($con)
 
                     if($league['name'] == 'NHL') {
                         $league['last_game_day'] = $league['last_game_day'] + 5;
+                        if($league['last_game_day'] > $league['max_game_days']) {
+                            $league['last_game_day'] = $league['max_game_days'];
+                        }
                     } else {
                         $league['last_game_day'] = $league['last_game_day'] + 4;
                     }
