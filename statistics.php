@@ -4,11 +4,20 @@ include 'content/session.php';
 include 'content/header.php';
 ?>
 <h2><?=$translator->__('Statistics',$language)?></h2>
-<?php 
-    $leagues = get_all_leagues($con);
+<?php $leagues = get_all_leagues($con);?>
+<nav>
+	<div class='tab'>
+<?php foreach($leagues as $league) {?>
+		<button class='tablinks' onclick='openTab(event, "<?=$league['name']?>")'><?=$league['name']?></button>
+<?php } ?>
+	</div>
+</nav>
+<div class='container'>
+<?php
     foreach($leagues as $league) {	
 ?>
-<div>
+<div id='<?=$league['name']?>' class='tabcontent' style='display: none;'>
+<div class='statistic-table'>
     <p><?=$translator->__('League table',$language)?> <?=$league['name']?> (<?=$league['last_game_day']?>/<?=$league['max_game_days']?>):</p>
     <table>
 		<tr>
@@ -76,7 +85,7 @@ foreach($teams as $team) {
 $playdown = get_playdown_by_league_id($con, $league['id']);
 $playoff = get_playoff_by_league_id($con, $league['id']);
 if($playoff) { ?>
-<div>
+<div class='statistic-table'>
     <p><?=$translator->__('Playoff table',$language)?> <?=$league['name']?></p>
     <table>
 		<tr>
@@ -130,7 +139,7 @@ for($i = 0; $i < count($games); $i += 7) {
 </div>
 <?php } ?>
 <?php if($playdown) { ?>
-<div>
+<div class='statistic-table'>
 	<p><?=$translator->__('Playdown table',$language)?> <?=$league['name']?></p>
 	<table>
 		<tr>
@@ -149,10 +158,10 @@ foreach($teams as $team) {
 		<tr>
 			<td><?=++$index?></td>
 			<td><div class="image-text-wrapper"><img src='<?="images/".$team['team_id'].".png"?>' class='team-logo'/><?=$team['team_name']?></div></td>
-			<td><?=$team['win']?></td>
-			<td><?=$team['lose']?></td>
-			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
-			<td><?=$team['points']?></td>
+			<td class='goal-container'><?=$team['win']?></td>
+			<td class='goal-container'><?=$team['lose']?></td>
+			<td class='goal-container'><?=$team['goals_shot'].":".$team['goals_received']?></td>
+			<td class='goal-container'><?=$team['points']?></td>
 		</tr>
 <?php
 }
@@ -160,4 +169,7 @@ foreach($teams as $team) {
 	</table>
 </div>
 <?php } ?>
+</div>
 <?php } ?>
+</div>
+<?php include 'content/footer.php'; ?>

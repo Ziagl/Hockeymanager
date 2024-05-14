@@ -236,10 +236,10 @@ foreach($teams as $team) {
 		<tr>
 			<td><?=++$index?></td>
 			<td><div class="image-text-wrapper"><img src='<?="images/".$team['team_id'].".png"?>' class='team-logo'/><?=$team['team_name']?></div></td>
-			<td><?=$team['win']?></td>
-			<td><?=$team['lose']?></td>
-			<td><?=$team['goals_shot'].":".$team['goals_received']?></td>
-			<td><?=$team['points']?></td>
+			<td class='goal-container'><?=$team['win']?></td>
+			<td class='goal-container'><?=$team['lose']?></td>
+			<td class='goal-container'><?=$team['goals_shot'].":".$team['goals_received']?></td>
+			<td class='goal-container'><?=$team['points']?></td>
 		</tr>
 <?php
 }

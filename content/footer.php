@@ -17,8 +17,14 @@
             }
             // Füge diese Zeile hinzu, um den ersten Tab beim Laden zu öffnen
             document.addEventListener("DOMContentLoaded", function() {
-                document.getElementById("Games").style.display = "flex";
-                document.getElementsByClassName("tablinks")[0].className += " active";
+                if(document.getElementById("Games")) {
+                    document.getElementById("Games").style.display = "flex";
+                    document.getElementsByClassName("tablinks")[0].className += " active";
+                }
+                if(document.getElementById("DEL")) {
+                    document.getElementById("DEL").style.display = "flex";
+                    document.getElementsByClassName("tablinks")[0].className += " active";
+                }
             });
         </script>
     </body>
