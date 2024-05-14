@@ -821,13 +821,13 @@ function update_playdown_stats($con, $playdown_game_day, $playdown)
     foreach($games as $game) {
         $stats = compute_stats_for_game($con, $game, 'PlaydownGame');
 
-        $stmt = $con->prepare('UPDATE PlaydownTeam SET points = points + ?, win = win + ?, lose = lose + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
-        $stmt->bind_param('iiiiii', $stats['home_points'], $stats['home_win'], $stats['home_lose'], $stats['goals_home'], $stats['goals_away'], $game['home_team_id']);
+        $stmt = $con->prepare('UPDATE PlaydownTeam SET points = points + ?, win = win + ?, win_ot = win_ot + ?, win_pe = win_pe + ?, lose = lose + ?, lose_ot = lose_ot + ?, lose_pe= lose_pe + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
+        $stmt->bind_param('iiiiiiiiii', $stats['home_points'], $stats['home_win'], $stats['home_win_ot'], $stats['home_win_pe'], $stats['home_lose'], $stats['home_lose_ot'], $stats['home_lose_pe'], $stats['goals_home'], $stats['goals_away'], $game['home_team_id']);
         $stmt->execute();
         $stmt->close();
 
-        $stmt = $con->prepare('UPDATE PlaydownTeam SET points = points + ?, win = win + ?, lose = lose + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
-        $stmt->bind_param('iiiiii', $stats['away_points'], $stats['away_win'], $stats['away_lose'], $stats['goals_away'], $stats['goals_home'], $game['away_team_id']);
+        $stmt = $con->prepare('UPDATE PlaydownTeam SET points = points + ?, win = win + ?, win_ot = win_ot + ?, win_pe = win_pe + ?, lose = lose + ?, lose_ot = lose_ot + ?, lose_pe = lose_pe + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
+        $stmt->bind_param('iiiiiiiiii', $stats['away_points'], $stats['away_win'], $stats['away_win_ot'], $stats['away_win_pe'], $stats['away_lose'], $stats['away_lose_ot'], $stats['away_lose_pe'], $stats['goals_away'], $stats['goals_home'], $game['away_team_id']);
         $stmt->execute();
         $stmt->close();
     }
@@ -840,13 +840,13 @@ function update_playoff_stats($con, $playoff_game_day, $playoff_round, $playoff)
     foreach($games as $game) {
         $stats = compute_stats_for_game($con, $game, 'PlayoffGame');
 
-        $stmt = $con->prepare('UPDATE PlayoffTeam SET win = win + ?, lose = lose + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
-        $stmt->bind_param('iiiii', $stats['home_win'], $stats['home_lose'], $stats['goals_home'], $stats['goals_away'], $game['home_team_id']);
+        $stmt = $con->prepare('UPDATE PlayoffTeam SET win = win + ?, win_ot = win_ot + ?, win_pe = win_pe + ?, lose = lose + ?, lose_ot = lose_ot + ?, lose_pe = lose_pe + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
+        $stmt->bind_param('iiiiiiiii', $stats['home_win'], $stats['home_win_ot'], $stats['home_win_pe'], $stats['home_lose'], $stats['home_lose_ot'], $stats['home_lose_pe'], $stats['goals_home'], $stats['goals_away'], $game['home_team_id']);
         $stmt->execute();
         $stmt->close();
 
-        $stmt = $con->prepare('UPDATE PlayoffTeam SET win = win + ?, lose = lose + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
-        $stmt->bind_param('iiiii', $stats['away_win'], $stats['away_lose'], $stats['goals_away'], $stats['goals_home'], $game['away_team_id']);
+        $stmt = $con->prepare('UPDATE PlayoffTeam SET win = win + ?, win_ot = win_ot + ?, win_pe = win_pe + ?, lose = lose + ?, lose_ot = lose_ot + ?, lose_pe = lose_pe + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE team_id = ?');
+        $stmt->bind_param('iiiiiiiii', $stats['away_win'], $stats['away_win_ot'], $stats['away_win_pe'], $stats['away_lose'], $stats['away_lose_ot'], $stats['away_lose_pe'], $stats['goals_away'], $stats['goals_home'], $game['away_team_id']);
         $stmt->execute();
         $stmt->close();
 
@@ -876,13 +876,13 @@ function update_stats_of_league($con, $week, $league)
     foreach($games as $game) {
         $stats = compute_stats_for_game($con, $game, 'Game');
 
-        $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, lose = lose + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
-        $stmt->bind_param('iiiiii', $stats['home_points'], $stats['home_win'], $stats['home_lose'], $stats['goals_home'], $stats['goals_away'], $game['home_team_id']);
+        $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, win_ot = win_ot + ?, win_pe = win_pe + ?, lose = lose + ?, lose_ot = lose_ot = ?, lose_pe = lose_pe = ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
+        $stmt->bind_param('iiiiiiiiii', $stats['home_points'], $stats['home_win'], $stats['home_win_ot'], $stats['home_win_pe'], $stats['home_lose'], $stats['home_lose_ot'], $stats['home_lose_pe'], $stats['goals_home'], $stats['goals_away'], $game['home_team_id']);
         $stmt->execute();
         $stmt->close();
 
-        $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, lose = lose + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
-        $stmt->bind_param('iiiiii', $stats['away_points'], $stats['away_win'], $stats['away_lose'], $stats['goals_away'], $stats['goals_home'], $game['away_team_id']);
+        $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, win_ot = win_ot + ?, win_pe = win_pe + ?, lose = lose + ?, lose_ot = lose_ot = ?, lose_pe = lose_pe = ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
+        $stmt->bind_param('iiiiiiiiii', $stats['away_points'], $stats['away_win'], $stats['away_win_ot'], $stats['away_win_pe'], $stats['away_lose'], $stats['away_lose_ot'], $stats['away_lose_pe'], $stats['goals_away'], $stats['goals_home'], $game['away_team_id']);
         $stmt->execute();
         $stmt->close();
 
@@ -995,9 +995,17 @@ function compute_stats_for_game($con, $game, $tableName)
     $overtime_away = $game['away_team_goal_overtime'];
 
     $home_win = $goals_home > $goals_away ? 1 : 0;
+    $home_win_ot = 0;
+    $home_win_pe = 0;
     $away_win = $goals_away > $goals_home ? 1 : 0;
+    $away_win_ot = 0;
+    $away_win_pe = 0;
     $home_lose = $goals_home < $goals_away ? 1 : 0;
+    $home_lose_ot = 0;
+    $home_lose_pe = 0;
     $away_lose = $goals_away < $goals_home ? 1 : 0;
+    $away_lose_ot = 0;
+    $away_lose_pe = 0;
     $draw = 0;
 
     if($home_win == 1 && $away_lose == 1) {
@@ -1014,10 +1022,10 @@ function compute_stats_for_game($con, $game, $tableName)
     // if it is draw after 3 periods -> use overtime goals
     if($draw == 1)
     {
-        $home_win = $overtime_home > $overtime_away ? 1 : 0;
-        $away_win = $overtime_away > $overtime_home ? 1 : 0;
-        $home_lose = $overtime_home < $overtime_away ? 1 : 0;
-        $away_lose = $overtime_away < $overtime_home ? 1 : 0;
+        $home_win_ot = $overtime_home > $overtime_away ? 1 : 0;
+        $away_win_ot = $overtime_away > $overtime_home ? 1 : 0;
+        $home_lose_ot = $overtime_home < $overtime_away ? 1 : 0;
+        $away_lose_ot = $overtime_away < $overtime_home ? 1 : 0;
         $draw = 0;
 
         if($home_win == 1 && $away_lose == 1) {
@@ -1037,10 +1045,10 @@ function compute_stats_for_game($con, $game, $tableName)
             // TODO add shootout here
             if(50 > random_int(0, 99))
             {
-                $home_win = 1;
-                $home_lose = 0;
-                $away_win = 0;
-                $away_lose = 1;
+                $home_win_pe = 1;
+                $home_lose_pe = 0;
+                $away_win_pe = 0;
+                $away_lose_pe = 1;
 
                 $home_points = 2;
                 $away_points = 1;
@@ -1052,10 +1060,10 @@ function compute_stats_for_game($con, $game, $tableName)
             }
             else
             {
-                $home_win = 0;
-                $home_lose = 1;
-                $away_win = 1;
-                $away_lose = 0;
+                $home_win_pe = 0;
+                $home_lose_pe = 1;
+                $away_win_pe = 1;
+                $away_lose_pe = 0;
 
                 $home_points = 1;
                 $away_points = 2;
@@ -1070,32 +1078,22 @@ function compute_stats_for_game($con, $game, $tableName)
         }
     }
 
-    // no overtime -> restore used overtime goals
-    // currently we don't want the player to get its overtime goals back
-    /*
-    else {
-        if($overtime_home > 0) {
-            $stmt = $con->prepare('UPDATE Team SET goal_account_overtime = goal_account_overtime + ? WHERE id = ?');
-            $stmt->bind_param('ii', $overtime_home, $game['home_team_id']);
-            $stmt->execute();
-            $stmt->close();
-        }
-        if($overtime_away > 0) {
-            $stmt = $con->prepare('UPDATE Team SET goal_account_overtime = goal_account_overtime + ? WHERE id = ?');
-            $stmt->bind_param('ii', $overtime_away, $game['away_team_id']);
-            $stmt->execute();
-            $stmt->close();
-        }
-    }*/
-
     $return = array();
     $return['home_points'] = $home_points;
     $return['home_win'] = $home_win;
+    $return['home_win_ot'] = $home_win_ot;
+    $return['home_win_pe'] = $home_win_pe;
     $return['home_lose'] = $home_lose;
+    $return['home_lose_ot'] = $home_lose_ot;
+    $return['home_lose_pe'] = $home_lose_pe;
     $return['goals_home'] = $goals_home;
     $return['away_points'] = $away_points;
     $return['away_win'] = $away_win;
+    $return['away_win_ot'] = $away_win_ot;
+    $return['away_win_pe'] = $away_win_pe;
     $return['away_lose'] = $away_lose;
+    $return['away_lose_ot'] = $away_lose_ot;
+    $return['away_lose_pe'] = $away_lose_pe;
     $return['goals_away'] = $goals_away;
 
     return $return;
@@ -1149,7 +1147,7 @@ function reset_playoff($con)
 function reset_league($con, $goal_account_home, $goal_account_away, $goal_account_overtime)
 {
     // reset teams
-    $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, lose = 0, goal_account_bonus_home = 0, goal_account_bonus_away = 0, win_counter = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ?');
+    $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, win_ot = 0, win_pe = 0, lose = 0, lose_ot = 0, lose_pe = 0, goal_account_bonus_home = 0, goal_account_bonus_away = 0, win_counter = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ?');
 	$stmt->bind_param('iiiiiii', $goal_account_home, $goal_account_home, $goal_account_home, $goal_account_away, $goal_account_away, $goal_account_away, $goal_account_overtime);
 	$stmt->execute();
     $stmt->close();

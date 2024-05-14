@@ -1,4 +1,5 @@
 Name=Name
+Games=Spiele
 Won=Gewonnen
 Lost=Verloren
 Goals=Tore
