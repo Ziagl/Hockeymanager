@@ -75,15 +75,15 @@ foreach($teams as $team) {
 			?></td>
 			<td><div class='image-text-wrapper'><img src='images/<?=$team['id']?>.png' class='team-logo'/><p><?=$team['name']?></p></div></td>
 			<td><?=$team['username']?></td>
-			<td class='goal-container'><?=$team['win']+$team['win_ot']+$team['win_pe']+$team['lose']+$team['lose_ot']+$team['lose_pe']?></td>
+			<td class='goal-container hidden-xs'><?=$team['win']+$team['win_ot']+$team['win_pe']+$team['lose']+$team['lose_ot']+$team['lose_pe']?></td>
 			<td class='goal-container'><?=$team['win']?></td>
-			<td class='goal-container'><?=$team['win_ot']?></td>
-			<td class='goal-container'><?=$team['win_pe']?></td>
+			<td class='goal-container hidden-xs'><?=$team['win_ot']?></td>
+			<td class='goal-container hidden-xs'><?=$team['win_pe']?></td>
 			<td class='goal-container'><?=$team['lose']?></td>
-			<td class='goal-container'><?=$team['lose_ot']?></td>
-			<td class='goal-container'><?=$team['lose_pe']?></td>
+			<td class='goal-container hidden-xs'><?=$team['lose_ot']?></td>
+			<td class='goal-container hidden-xs'><?=$team['lose_pe']?></td>
 			<td class='goal-container'><?=$team['goals_shot'].":".$team['goals_received']?></td>
-			<td class='goal-container'><?=$team['goals_shot'] - $team['goals_received']?></td>
+			<td class='goal-container hidden-xs'><?=$team['goals_shot'] - $team['goals_received']?></td>
 			<td class='goal-container'><?=$team['points']?></td>
 		</tr>
 <?php
@@ -174,15 +174,15 @@ foreach($teams as $team) {
 		<tr>
 			<td><?=++$index?></td>
 			<td><div class="image-text-wrapper"><img src='<?="images/".$team['team_id'].".png"?>' class='team-logo'/><?=$team['team_name']?></div></td>
-			<td class='goal-container'><?=$team['win']+$team['win_ot']+$team['win_pe']+$team['lose']+$team['lose_ot']+$team['lose_pe']?></td>
+			<td class='goal-container hidden-xs'><?=$team['win']+$team['win_ot']+$team['win_pe']+$team['lose']+$team['lose_ot']+$team['lose_pe']?></td>
 			<td class='goal-container'><?=$team['win']?></td>
-			<td class='goal-container'><?=$team['win_ot']?></td>
-			<td class='goal-container'><?=$team['win_pe']?></td>
+			<td class='goal-container hidden-xs'><?=$team['win_ot']?></td>
+			<td class='goal-container hidden-xs'><?=$team['win_pe']?></td>
 			<td class='goal-container'><?=$team['lose']?></td>
-			<td class='goal-container'><?=$team['lose_ot']?></td>
-			<td class='goal-container'><?=$team['lose_pe']?></td>
+			<td class='goal-container hidden-xs'><?=$team['lose_ot']?></td>
+			<td class='goal-container hidden-xs'><?=$team['lose_pe']?></td>
 			<td class='goal-container'><?=$team['goals_shot'].":".$team['goals_received']?></td>
-			<td class='goal-container'><?=$team['goals_shot'] - $team['goals_received']?></td>
+			<td class='goal-container hidden-xs'><?=$team['goals_shot'] - $team['goals_received']?></td>
 			<td class='goal-container'><?=$team['points']?></td>
 		</tr>
 <?php

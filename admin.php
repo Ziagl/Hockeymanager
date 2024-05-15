@@ -47,6 +47,18 @@ if(isset($_POST['bonus_goals'])) {
 	$stmt->bind_param('iii', $win_leader, $win_five_times, $win_five_goals);
 	$stmt->execute();
 }
+//message
+if(isset($_POST['message'])) {
+	$stmt = $con->prepare('UPDATE State SET message = ? WHERE id = 1');
+	$stmt->bind_param('s', $_POST['textfield']);
+	$stmt->execute();
+}
+//email
+if(isset($_POST['email'])) {
+	$stmt = $con->prepare('UPDATE State SET admin_mail = ? WHERE id = 1');
+	$stmt->bind_param('s', $_POST['email']);
+	$stmt->execute();
+}
 
 // get data from database
 
@@ -103,6 +115,20 @@ include 'content/header.php';
 	<form method="POST" action="">
 		<input type="submit" <?php if($state['season_over'] == 0) echo 'disabled' ?> value="<?=$translator->__('Next season',$language)?>">
 		<input type="hidden" name="next_season" value="1"></input>
+	</form>
+</div>
+<div>
+	<p><?=$translator->__('Message of the day',$language)?>:</p>
+	<form method="POST" action="">
+		<textarea id="textfield" name="textfield" rows="5" cols="40"><?php echo $state['message'];?></textarea></br>
+		<input type="submit" value="<?=$translator->__('Save',$language)?>"/>
+		<input type="hidden" name="message" value="1"></input>
+	</form>
+</div>
+<div>
+	<p><?=$translator->__('Admin mail',$language)?>:</p>
+	<form method="POST" action="">
+		<input type="text" name="email" value="<?=$state['admin_mail']?>" onchange="this.form.submit()"></input>
 	</form>
 </div>
 <div>

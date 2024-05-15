@@ -34,6 +34,7 @@ footer { background: #333; color: #fff; text-align: center; padding: 10px; posit
 td.goal-container { text-align: center; }
 .error-input { background-color: rgb(255, 96, 96); }
 .statistic-table { width: 100%; }
+.admin-message { background-color: #ddd; font-style: italic; padding: 10px; text-align: center; }
 
 @media (max-width: 600px) {
     .tabcontent { flex: 1 1 100%; }

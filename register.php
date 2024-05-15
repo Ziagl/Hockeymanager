@@ -4,24 +4,24 @@ include "config/functions.php";
 // Now we check if the data was submitted, isset() function will check if the data exists.
 if (!isset($_POST['username'], $_POST['password'], $_POST['email'])) {
 	// Could not get the data that should have been sent.
-	exit('Please complete the registration form!');
+	exit($translator->__('Please complete the registration form!',$language));
 }
 // Make sure the submitted registration values are not empty.
 if (empty($_POST['username']) || empty($_POST['password']) || empty($_POST['email'])) {
 	// One or more values are empty.
-	exit('Please complete the registration form');
+	exit($translator->__('Please complete the registration form!',$language));
 }
 
 if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-	exit('Email is not valid!');
+	exit($translator->__('Email is not valid!',$language));
 }
 
 if (preg_match('/^[a-zA-Z0-9]+$/', $_POST['username']) == 0) {
-    exit('Username is not valid!');
+    exit($translator->__('Username is not valid!',$language));
 }
 
 if (strlen($_POST['password']) > 20 || strlen($_POST['password']) < 5) {
-	exit('Password must be between 5 and 20 characters long!');
+	exit($translator->__('Password must be between 5 and 20 characters long!',$language));
 }
 
 
@@ -34,7 +34,7 @@ if ($stmt = $con->prepare('SELECT id, password FROM User WHERE username = ?')) {
 	// Store the result so we can check if the account exists in the database.
 	if ($stmt->num_rows > 0) {
 		// Username already exists
-		echo 'Username exists, please choose another!';
+		echo $translator->__('Username exists, please choose another!',$language);
 	} else {
         // Username doesn't exists, insert new account
         if ($stmt = $con->prepare('INSERT INTO User (username, password, email, activation_code) VALUES (?, ?, ?, ?)')) {
@@ -45,13 +45,18 @@ if ($stmt = $con->prepare('SELECT id, password FROM User WHERE username = ?')) {
             $stmt->execute();
             //echo 'You have successfully registered! You can now login!';
             $from    = 'noreply@' . $DOMAIN;
-            $subject = 'Account Activation Required';
+            $subject = $translator->__('Account Activation Required',$language);
             $headers = 'From: ' . $from . "\r\n" . 'Reply-To: ' . $from . "\r\n" . 'X-Mailer: PHP/' . phpversion() . "\r\n" . 'MIME-Version: 1.0' . "\r\n" . 'Content-Type: text/html; charset=UTF-8' . "\r\n";
             // Update the activation variable below
             $activate_link = $DOMAINPATH . 'activate.php?email=' . $_POST['email'] . '&code=' . $uniqid;
-            $message = '<p>Please click the following link to activate your account: <a href="' . $activate_link . '">' . $activate_link . '</a></p>';
+            $message = '<p>'.$translator->__('Please click the following link to activate your account',$language).': <a href="' . $activate_link . '">' . $activate_link . '</a></p>';
             mail($_POST['email'], $subject, $message, $headers);
-            echo 'Please check your email to activate your account!';
+            // info to admin
+            $state = get_game_day($con);
+            $subject = $translator->__('New player registered',$language);
+            $message = $_POST['username'] . ' just registered.';
+            mail($state['admin_mail'], $subject, $message, $headers);
+            echo $translator->__('Please check your email to activate your account!',$language);
         } else {
             // Something is wrong with the SQL statement, so you must check to make sure your accounts table exists with all three fields.
             echo 'Could not prepare statement!';
