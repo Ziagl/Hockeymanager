@@ -282,13 +282,13 @@ for($i = 0; $i < count($games); $i += 7) {
 		<tr>
 			<td><?=++$index?></td>
 			<td><div class="image-text-wrapper"><img src='<?="images/".$games[$i]['team1_id'].".png"?>' class='team-logo'/><?=$games[$i]['team1']?></div></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i]['game_day']) { if ($games[$i]['home_win'] > 0) {echo 'X'; $team1_wins++;} else $team2_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 1]['game_day']) { if ($games[$i + 1]['home_win'] == 0) {echo 'X'; $team1_wins++;} else $team2_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 2]['game_day']) { if ($games[$i + 2]['home_win'] > 0) {echo 'X'; $team1_wins++;} else $team2_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 3]['game_day']) { if ($games[$i + 3]['home_win'] == 0) {echo 'X'; $team1_wins++;} else $team2_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 4]['game_day']) { if ($games[$i + 4]['home_win'] > 0 && $team1_wins < 4 && $team2_wins < 4) {echo 'X'; $team1_wins++;} else $team2_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 5]['game_day']) { if ($games[$i + 5]['home_win'] == 0 && $team1_wins < 4 && $team2_wins < 4) {echo 'X'; $team1_wins++;} else $team2_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 6]['game_day']) { if ($games[$i + 6]['home_win'] > 0 && $team1_wins < 4 && $team2_wins < 4) {echo 'X'; $team1_wins++;} else $team2_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i]['game_day']) { if ($games[$i]['home_win'] > 0) {echo display_game_result($games[$i]); $team1_wins++;} else $team2_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 1]['game_day']) { if ($games[$i + 1]['home_win'] == 0) {echo display_game_result($games[$i + 1]); $team1_wins++;} else $team2_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 2]['game_day']) { if ($games[$i + 2]['home_win'] > 0) {echo display_game_result($games[$i + 2]); $team1_wins++;} else $team2_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 3]['game_day']) { if ($games[$i + 3]['home_win'] == 0) {echo display_game_result($games[$i + 3]); $team1_wins++;} else $team2_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 4]['game_day']) { if ($games[$i + 4]['home_win'] > 0 && $team1_wins < 4 && $team2_wins < 4) {echo display_game_result($games[$i + 4]); $team1_wins++;} else $team2_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 5]['game_day']) { if ($games[$i + 5]['home_win'] == 0 && $team1_wins < 4 && $team2_wins < 4) {echo display_game_result($games[$i + 5]); $team1_wins++;} else $team2_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 6]['game_day']) { if ($games[$i + 6]['home_win'] > 0 && $team1_wins < 4 && $team2_wins < 4) {echo display_game_result($games[$i + 6]); $team1_wins++;} else $team2_wins++; }?></td>
 		</tr>
 <?php
 	$team1_wins = 0;
@@ -297,13 +297,13 @@ for($i = 0; $i < count($games); $i += 7) {
 		<tr>
 			<td></td>
 			<td><div class="image-text-wrapper"><img src='<?="images/".$games[$i]['team2_id'].".png"?>' class='team-logo'/><?=$games[$i]['team2']?></div></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i]['game_day']) { if ($games[$i]['home_win'] == 0) {echo 'X'; $team2_wins++;} else $team1_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 1]['game_day']) { if ($games[$i + 1]['home_win'] > 0) {echo 'X'; $team2_wins++;} else $team1_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 2]['game_day']) { if ($games[$i + 2]['home_win'] == 0) {echo 'X'; $team2_wins++;} else $team1_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 3]['game_day']) { if ($games[$i + 3]['home_win'] > 0) {echo 'X'; $team2_wins++;} else $team1_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 4]['game_day']) { if ($games[$i + 4]['home_win'] == 0 && $team1_wins < 4 && $team2_wins < 4) {echo 'X'; $team2_wins++;} else $team1_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 5]['game_day']) { if ($games[$i + 5]['home_win'] > 0 && $team1_wins < 4 && $team2_wins < 4) {echo 'X'; $team2_wins++;} else $team1_wins++; }?></td>
-			<td><?php if($playoff['last_game_day'] >= $games[$i + 6]['game_day']) { if ($games[$i + 6]['home_win'] == 0 && $team1_wins < 4 && $team2_wins < 4) {echo 'X'; $team2_wins++;} else $team1_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i]['game_day']) { if ($games[$i]['home_win'] == 0) {echo display_game_result($games[$i]); $team2_wins++;} else $team1_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 1]['game_day']) { if ($games[$i + 1]['home_win'] > 0) {echo display_game_result($games[$i + 1]); $team2_wins++;} else $team1_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 2]['game_day']) { if ($games[$i + 2]['home_win'] == 0) {echo display_game_result($games[$i + 2]); $team2_wins++;} else $team1_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 3]['game_day']) { if ($games[$i + 3]['home_win'] > 0) {echo display_game_result($games[$i + 3]); $team2_wins++;} else $team1_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 4]['game_day']) { if ($games[$i + 4]['home_win'] == 0 && $team1_wins < 4 && $team2_wins < 4) {echo display_game_result($games[$i + 4]); $team2_wins++;} else $team1_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 5]['game_day']) { if ($games[$i + 5]['home_win'] > 0 && $team1_wins < 4 && $team2_wins < 4) {echo display_game_result($games[$i + 5]); $team2_wins++;} else $team1_wins++; }?></td>
+			<td><?php if($playoff['last_game_day'] >= $games[$i + 6]['game_day']) { if ($games[$i + 6]['home_win'] == 0 && $team1_wins < 4 && $team2_wins < 4) {echo display_game_result($games[$i + 6]); $team2_wins++;} else $team1_wins++; }?></td>
 		</tr>
 <?php
 }
@@ -422,11 +422,11 @@ if($playoff != null) {
 			<td><?=$index?></td>
 			<td><img src='images/<?=$game['home_id']?>.png' class='team-logo-small'/><?=$game['home']?></td>
 			<td><img src='images/<?=$game['away_id']?>.png' class='team-logo-small'/><?=$game['away']?></td>
-			<td class='goal-container'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo ($game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'] + ($home_goals == $away_goals ? $game['home_team_goal_overtime'] : 0) + $game['home_team_penalty_win']) . ($game['home_team_penalty_win'] == 1 ? '*' : '') . " : " .  ($game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'] + ($home_goals == $away_goals ? $game['away_team_goal_overtime'] : 0) + $game['away_team_penalty_win']) . ($game['away_team_penalty_win'] == 1 ? '*' : '');?></span></td>
-			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'] . " : " . $game['away_team_goal_1'];?></span></td>
-			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'] . " : " . $game['away_team_goal_2'];?></span></td>
-			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'] . " : " . $game['away_team_goal_3'];?></span></td>
-			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day'] && $home_goals == $away_goals) echo $game['home_team_goal_overtime'] . " : " . $game['away_team_goal_overtime'];?></span></td>		
+			<td class='goal-container'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo display_game_result($game);?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'] . ":" . $game['away_team_goal_1'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'] . ":" . $game['away_team_goal_2'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'] . ":" . $game['away_team_goal_3'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day'] && $home_goals == $away_goals) echo $game['home_team_goal_overtime'] . ":" . $game['away_team_goal_overtime'];?></span></td>		
 		</tr>
 	<?php } ?>
 	</table>
