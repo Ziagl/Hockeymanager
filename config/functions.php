@@ -876,12 +876,12 @@ function update_stats_of_league($con, $week, $league)
     foreach($games as $game) {
         $stats = compute_stats_for_game($con, $game, 'Game');
 
-        $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, win_ot = win_ot + ?, win_pe = win_pe + ?, lose = lose + ?, lose_ot = lose_ot = ?, lose_pe = lose_pe = ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
+        $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, win_ot = win_ot + ?, win_pe = win_pe + ?, lose = lose + ?, lose_ot = lose_ot + ?, lose_pe = lose_pe + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
         $stmt->bind_param('iiiiiiiiii', $stats['home_points'], $stats['home_win'], $stats['home_win_ot'], $stats['home_win_pe'], $stats['home_lose'], $stats['home_lose_ot'], $stats['home_lose_pe'], $stats['goals_home'], $stats['goals_away'], $game['home_team_id']);
         $stmt->execute();
         $stmt->close();
 
-        $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, win_ot = win_ot + ?, win_pe = win_pe + ?, lose = lose + ?, lose_ot = lose_ot = ?, lose_pe = lose_pe = ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
+        $stmt = $con->prepare('UPDATE Team SET points = points + ?, win = win + ?, win_ot = win_ot + ?, win_pe = win_pe + ?, lose = lose + ?, lose_ot = lose_ot + ?, lose_pe = lose_pe + ?, goals_shot = goals_shot + ?, goals_received = goals_received + ? WHERE id = ?');
         $stmt->bind_param('iiiiiiiiii', $stats['away_points'], $stats['away_win'], $stats['away_win_ot'], $stats['away_win_pe'], $stats['away_lose'], $stats['away_lose_ot'], $stats['away_lose_pe'], $stats['goals_away'], $stats['goals_home'], $game['away_team_id']);
         $stmt->execute();
         $stmt->close();
@@ -889,7 +889,7 @@ function update_stats_of_league($con, $week, $league)
         // adds two away goals if won five time in row
         if($state['win_five_times'] == 1)
         {
-            if($stats['home_win'] == 1 )
+            if($stats['home_win'] == 1 || $stats['home_win_ot'] == 1 || $stats['home_win_pe'] == 1)
             {
                 $team = get_team_by_id($con, $game['home_team_id']);
 
@@ -913,7 +913,7 @@ function update_stats_of_league($con, $week, $league)
                 $stmt->execute();
                 $stmt->close();
             }
-            if($stats['away_win'] == 1)
+            if($stats['away_win'] == 1 || $stats['away_win_ot'] == 1 || $stats['away_win_pe'] == 1)
             {
                 $team = get_team_by_id($con, $game['away_team_id']);
 
@@ -942,14 +942,14 @@ function update_stats_of_league($con, $week, $league)
         // adds a home goal if team won against leader
         if($state['win_leader'] == 1)
         {
-            if($stats['home_win'] == 1 && $game['away_team_id'] == $leader)
+            if(($stats['home_win'] == 1 || $stats['home_win_ot'] == 1 || $stats['home_win_pe'] == 1) && $game['away_team_id'] == $leader)
             {
                 $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_home = goal_account_bonus_home + 1, goal_account_home_1 = goal_account_home_1 + 1 WHERE id = ?');
                 $stmt->bind_param('i', $game['home_team_id']);
                 $stmt->execute();
                 $stmt->close();
             }
-            if($stats['away_win'] == 1 && $game['home_team_id'] == $leader)
+            if(($stats['away_win'] == 1 || $stats['away_win_ot'] == 1 || $stats['away_win_pe'] == 1) && $game['home_team_id'] == $leader)
             {
                 $stmt = $con->prepare('UPDATE Team SET goal_account_bonus_home = goal_account_bonus_home + 1, goal_account_home_1 = goal_account_home_1 + 1 WHERE id = ?');
                 $stmt->bind_param('i', $game['away_team_id']);
@@ -1028,11 +1028,11 @@ function compute_stats_for_game($con, $game, $tableName)
         $away_lose_ot = $overtime_away < $overtime_home ? 1 : 0;
         $draw = 0;
 
-        if($home_win == 1 && $away_lose == 1) {
+        if($home_win_ot == 1 && $away_lose_ot == 1) {
             $home_points = 2;
             $away_points = 1;
         }
-        else if($away_win == 1 && $home_lose == 1) {
+        else if($away_win_ot == 1 && $home_lose_ot == 1) {
             $home_points = 1;
             $away_points = 2;
         } else {
