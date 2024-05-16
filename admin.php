@@ -36,7 +36,7 @@ if(isset($_POST['compute_league'])) {
 }
 //next season
 if(isset($_POST['next_season'])) {
-	to_next_season($con, $MAX_GOALS_HOME, $MAX_GOALS_AWAY, $Max_GOALS_OVERTIME);
+	to_next_season($con, $MAX_GOALS_HOME, $MAX_GOALS_AWAY, $MAX_GOALS_OVERTIME, $MAX_GOALS_NHL_HOME, $MAX_GOALS_NHL_AWAY, $Max_GOALS_NHL_OVERTIME);
 }
 //bonus_goals
 if(isset($_POST['bonus_goals'])) {

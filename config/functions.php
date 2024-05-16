@@ -592,7 +592,7 @@ function to_next_day($con)
     $stmt->close();
 }
 
-function to_next_season($con, $goal_account_home, $goal_account_away, $goal_account_overtime)
+function to_next_season($con, $goal_account_home, $goal_account_away, $goal_account_overtime, $goal_account_nhl_home, $goal_account_nhl_away, $goal_account_nhl_overtime)
 {
     // only for germany -> up and down of teams
     $stmt = $con->prepare('SELECT * FROM Playdown');
@@ -637,7 +637,7 @@ function to_next_season($con, $goal_account_home, $goal_account_away, $goal_acco
     }
 
     // initialize
-    initialize_game($con, $goal_account_home, $goal_account_away, $goal_account_overtime);
+    initialize_game($con, $goal_account_home, $goal_account_away, $goal_account_overtime, $goal_account_nhl_home, $goal_account_nhl_away, $goal_account_nhl_overtime);
 }
 
 // check if given team is not controlled by user
@@ -1152,7 +1152,7 @@ function reset_league($con, $goal_account_home, $goal_account_away, $goal_accoun
 	$stmt->execute();
     $stmt->close();
 
-    $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, win_ot = 0, win_pe = 0, lose = 0, lose_ot = 0, lose_pe = 0, goal_account_bonus_home = 0, goal_account_bonus_away = 0, win_counter = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ? WHERE id = 9');
+    $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, win_ot = 0, win_pe = 0, lose = 0, lose_ot = 0, lose_pe = 0, goal_account_bonus_home = 0, goal_account_bonus_away = 0, win_counter = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ? WHERE league_id = 9');
 	$stmt->bind_param('iiiiiii', $goal_account_nhl_home, $goal_account_nhl_home, $goal_account_nhl_home, $goal_account_nhl_away, $goal_account_nhl_away, $goal_account_nhl_away, $goal_account_nhl_overtime);
 	$stmt->execute();
     $stmt->close();
