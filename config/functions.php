@@ -1144,11 +1144,16 @@ function reset_playoff($con)
     $stmt->close();
 }
 
-function reset_league($con, $goal_account_home, $goal_account_away, $goal_account_overtime)
+function reset_league($con, $goal_account_home, $goal_account_away, $goal_account_overtime, $goal_account_nhl_home, $goal_account_nhl_away, $goal_account_nhl_overtime)
 {
     // reset teams
     $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, win_ot = 0, win_pe = 0, lose = 0, lose_ot = 0, lose_pe = 0, goal_account_bonus_home = 0, goal_account_bonus_away = 0, win_counter = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ?');
 	$stmt->bind_param('iiiiiii', $goal_account_home, $goal_account_home, $goal_account_home, $goal_account_away, $goal_account_away, $goal_account_away, $goal_account_overtime);
+	$stmt->execute();
+    $stmt->close();
+
+    $stmt = $con->prepare('UPDATE Team SET points = 0, goals_shot = 0, goals_received = 0, win = 0, win_ot = 0, win_pe = 0, lose = 0, lose_ot = 0, lose_pe = 0, goal_account_bonus_home = 0, goal_account_bonus_away = 0, win_counter = 0, goal_account_home_1 = ?, goal_account_home_2 = ?, goal_account_home_3 = ?, goal_account_away_1 = ?, goal_account_away_2 = ?, goal_account_away_3 = ?, goal_account_overtime = ? WHERE id = 9');
+	$stmt->bind_param('iiiiiii', $goal_account_nhl_home, $goal_account_nhl_home, $goal_account_nhl_home, $goal_account_nhl_away, $goal_account_nhl_away, $goal_account_nhl_away, $goal_account_nhl_overtime);
 	$stmt->execute();
     $stmt->close();
 
@@ -1213,13 +1218,13 @@ function create_calendar($con)
 }
 
 // initialize a new geam -> reset all values
-function initialize_game($con, $goal_account_home, $goal_account_away, $goal_account_overtime)
+function initialize_game($con, $goal_account_home, $goal_account_away, $goal_account_overtime, $goal_account_nhl_home, $goal_account_nhl_away, $goal_account_nhl_overtime)
 {
     // reset state
     reset_state($con);
 
     // reset league
-    reset_league($con, $goal_account_home, $goal_account_away, $goal_account_overtime);
+    reset_league($con, $goal_account_home, $goal_account_away, $goal_account_overtime, $goal_account_nhl_home, $goal_account_nhl_away, $goal_account_nhl_overtime);
 
     // reset playdowns
     reset_playdown($con);

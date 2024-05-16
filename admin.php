@@ -12,7 +12,7 @@ if(isset($_POST['team_id']) && isset($_POST['user_id'])) {
 }
 // reset game
 if(isset($_POST['reset_game'])) {
-	initialize_game($con, $MAX_GOALS_HOME, $MAX_GOALS_AWAY, $Max_GOALS_OVERTIME);
+	initialize_game($con, $MAX_GOALS_HOME, $MAX_GOALS_AWAY, $Max_GOALS_OVERTIME, $MAX_GOALS_NHL_HOME, $MAX_GOALS_NHL_AWAY, $Max_GOALS_NHL_OVERTIME);
 }
 // next day
 if(isset($_POST['next_day'])) {
