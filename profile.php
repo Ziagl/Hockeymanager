@@ -22,10 +22,6 @@ include 'content/header.php';
 			<td><?=$_SESSION['name']?></td>
 		</tr>
 		<tr>
-			<td><?=$translator->__('Password',$language)?>:</td>
-			<td><?=$password?></td>
-		</tr>
-		<tr>
 			<td>Email:</td>
 			<td><?=$email?></td>
 		</tr>
