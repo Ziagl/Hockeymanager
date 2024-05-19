@@ -16,7 +16,7 @@ if(isset($_POST["team_id"]) && $_POST["team_id"] > 0) {
 // get data from database
 
 // get all teams from database
-$stmt = $con->prepare('SELECT * FROM Team');
+$stmt = $con->prepare('SELECT * FROM Team WHERE id NOT IN (SELECT team_id FROM User)');
 $stmt->execute();
 $result = $stmt->get_result();
 while($team = $result->fetch_array()) {
