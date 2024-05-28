@@ -76,6 +76,7 @@ if(isset($_POST['game_id'])) {
 	} else {
 		$statement = rtrim($statement, ",");
 		$statement.= ' WHERE id = ?';
+
 		$stmt = $con->prepare($statement);
 		$stmt->bind_param('i', $_POST['game_id']);
 		$stmt->execute();

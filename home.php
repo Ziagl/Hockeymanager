@@ -140,7 +140,7 @@ foreach($games as $game)
 			<tr>
 				<td>1. <?=$translator->__('Period',$language)?></td>
 				<td class='goal-container'><?php if($game['home_team_id'] == $user['team_id']) { ?>
-						<input name='home_team_goal_1' type='number' min='0' max='10' value='<?=$game['home_team_goal_1']?>' <?php if($state['day'] >= 1) { echo 'disabled'; } ?>onfocus='this.select();'></input>
+						<input name='home_team_goal_1' type='number' min='0' max='10' value='<?=$game['home_team_goal_1']?>' <?php if($state['day'] >= 1) { echo 'disabled'; } else {?> onfocus='this.select();'<?php } ?>></input>
 					<?php } else {
 							if($state['day'] < 1) {?>
 								?
@@ -148,7 +148,7 @@ foreach($games as $game)
 								echo $game['home_team_goal_1'];
 						  } }?></td>
 				<td class='goal-container'><?php if($game['away_team_id'] == $user['team_id']) { ?>
-						<input name='away_team_goal_1' type='number' min='0' max='10' value='<?=$game['away_team_goal_1']?>' <?php if($state['day'] >= 1) { echo 'disabled'; } ?> onfocus='this.select();'></input>
+						<input name='away_team_goal_1' type='number' min='0' max='10' value='<?=$game['away_team_goal_1']?>' <?php if($state['day'] >= 1) { echo 'disabled'; } else {?> onfocus='this.select();'<?php } ?>></input>
 					<?php } else {
 							if($state['day'] < 1) {?>
 								?
@@ -159,7 +159,7 @@ foreach($games as $game)
 			<tr>
 				<td>2. <?=$translator->__('Period',$language)?></td>
 				<td class='goal-container'><?php if($game['home_team_id'] == $user['team_id']) { ?>
-						<input name='home_team_goal_2' type='number' min='0' max='10' value='<?=$game['home_team_goal_2']?>' <?php if($state['day'] >= 2) { echo 'disabled'; } ?> onfocus='this.select();'></input>
+						<input name='home_team_goal_2' type='number' min='0' max='10' value='<?=$game['home_team_goal_2']?>' <?php if($state['day'] >= 2) { echo 'disabled'; } else {?> onfocus='this.select();'<?php } ?>></input>
 					<?php } else {
 							if($state['day'] < 2) {?>
 								?
@@ -167,7 +167,7 @@ foreach($games as $game)
 								echo $game['home_team_goal_2'];
 						  } }?></td>
 				<td class='goal-container'><?php if($game['away_team_id'] == $user['team_id']) { ?>
-						<input name='away_team_goal_2' type='number' min='0' max='10' value='<?=$game['away_team_goal_2']?>' <?php if($state['day'] >= 2) { echo 'disabled'; } ?> onfocus='this.select();'></input>
+						<input name='away_team_goal_2' type='number' min='0' max='10' value='<?=$game['away_team_goal_2']?>' <?php if($state['day'] >= 2) { echo 'disabled'; } else {?> onfocus='this.select();'<?php } ?>></input>
 					<?php } else {
 							if($state['day'] < 2) {?>
 								?
@@ -178,7 +178,7 @@ foreach($games as $game)
 			<tr>
 				<td>3. <?=$translator->__('Period',$language)?></td>
 				<td class='goal-container'><?php if($game['home_team_id'] == $user['team_id']) { ?>
-						<input name='home_team_goal_3' type='number' min='0' max='10' value='<?=$game['home_team_goal_3']?>' <?php if($state['day'] == 3) { echo 'disabled'; } ?> onfocus='this.select();'></input>
+						<input name='home_team_goal_3' type='number' min='0' max='10' value='<?=$game['home_team_goal_3']?>' <?php if($state['day'] == 3) { echo 'disabled'; } else {?> onfocus='this.select();'<?php } ?>></input>
 					<?php } else {
 							if($state['day'] < 3) {?>
 								?
@@ -186,7 +186,7 @@ foreach($games as $game)
 								echo $game['home_team_goal_3'];
 						  } }?></td>
 				<td class='goal-container'><?php if($game['away_team_id'] == $user['team_id']) { ?>
-						<input name='away_team_goal_3' type='number' min='0' max='10' value='<?=$game['away_team_goal_3']?>' <?php if($state['day'] == 3) { echo 'disabled'; } ?> onfocus='this.select();'></input>
+						<input name='away_team_goal_3' type='number' min='0' max='10' value='<?=$game['away_team_goal_3']?>' <?php if($state['day'] == 3) { echo 'disabled'; } else {?> onfocus='this.select();'<?php } ?>></input>
 					<?php } else {
 							if($state['day'] < 3) {?>
 								?
@@ -197,7 +197,7 @@ foreach($games as $game)
 			<tr>
 				<td><?=$translator->__('Overtime',$language)?></td>
 				<td class='goal-container'><?php if($game['home_team_id'] == $user['team_id']) { ?>
-						<input name='home_team_goal_overtime' type='number' min='0' max='1' value='<?=$game['home_team_goal_overtime']?>' <?php if($state['day'] == 3) { echo 'disabled'; } ?> onfocus='this.select();'></input>
+						<input name='home_team_goal_overtime' type='number' min='0' max='1' value='<?=$game['home_team_goal_overtime']?>' <?php if($state['day'] == 3) { echo 'disabled'; } else {?> onfocus='this.select();'<?php } ?>></input>
 					<?php } else {
 							if($state['day'] < 3) {?>
 								?
@@ -205,7 +205,7 @@ foreach($games as $game)
 								echo $game['home_team_goal_overtime'];
 						  } }?></td>
 				<td class='goal-container'><?php if($game['away_team_id'] == $user['team_id']) { ?>
-						<input name='away_team_goal_overtime' type='number' min='0' max='1' value='<?=$game['away_team_goal_overtime']?>' <?php if($state['day'] == 3) { echo 'disabled'; } ?> onfocus='this.select();'></input>
+						<input name='away_team_goal_overtime' type='number' min='0' max='1' value='<?=$game['away_team_goal_overtime']?>' <?php if($state['day'] == 3) { echo 'disabled'; } else {?> onfocus='this.select();'<?php } ?>></input>
 					<?php } else {
 							if($state['day'] < 3) {?>
 								?
@@ -214,9 +214,7 @@ foreach($games as $game)
 					  	  } }?></td>
 			</tr>
 		</table>
-		<?php if($state['day'] == 0) { ?>
 		<input type='hidden' name='game_id' value='<?=$game['id']?>'></input>
-		<?php } ?>
 		</form>
 	</div>
 <?php }
