@@ -1350,3 +1350,28 @@ function display_game_result($game)
         return $home.':'.$away;
     }
 }
+
+// chat  functions
+function add_message($con, $user_id, $message)
+{
+    $stmt = $con->prepare('INSERT INTO Chat (timestamp, user_id, message) VALUES (now(), ?, ?)');
+    $stmt->bind_param('is', $user_id, $message);
+    $stmt->execute();
+    $stmt->close();
+}
+
+function get_messages($con, $max_count)
+{
+    $stmt = $con->prepare('SELECT c.*, u.username FROM Chat c JOIN User u ON u.id = c.user_id ORDER BY c.id DESC LIMIT ?');
+    $stmt->bind_param('i', $max_count);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $messages = array();
+    while($message = $result->fetch_array()) {
+        $messages[] = $message;
+    }
+    $messages = array_reverse($messages);
+    $stmt->close();
+
+    return $messages;
+}

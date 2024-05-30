@@ -59,6 +59,12 @@ if(isset($_POST['email'])) {
 	$stmt->bind_param('s', $_POST['email']);
 	$stmt->execute();
 }
+//chat
+if(isset($_POST['chat_message_count'])) {
+	$stmt = $con->prepare('UPDATE State SET chat_message_count = ? WHERE id = 1');
+	$stmt->bind_param('i', $_POST['chat_message_count']);
+	$stmt->execute();
+}
 
 // get data from database
 
@@ -129,6 +135,12 @@ include 'content/header.php';
 	<p><?=$translator->__('Admin mail',$language)?>:</p>
 	<form method="POST" action="">
 		<input type="text" name="email" value="<?=$state['admin_mail']?>" onchange="this.form.submit()"></input>
+	</form>
+</div>
+<div>
+	<p><?=$translator->__('Chat messages to display',$language)?>:</p>
+	<form method="POST" action="">
+		<input type="text" name="chat_message_count" value="<?=$state['chat_message_count']?>" onchange="this.form.submit()"></input>
 	</form>
 </div>
 <div>

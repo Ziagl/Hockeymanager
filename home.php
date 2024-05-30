@@ -20,6 +20,9 @@ $state = get_game_day($con);
 // playoff or playdown
 $playdown = get_play_down($con, $user['team_id']);
 $playoff = get_play_off($con, $user['team_id']);
+
+// get last chat messages
+$chat_messages = get_messages($con, $state['chat_message_count']);
 ?>
 <div class="text-container">
 <h2><?=$translator->__('Dashboard',$language)?></h2>
@@ -44,19 +47,36 @@ $user_team = get_team_by_id($con, $user['team_id']);
 </div>
 <?php } ?>
 <div>
+	<p><?=$translator->__('Chat',$language)?>:</p>
+	<div class='chat-container' id='chat-container'>
+        <?php foreach($chat_messages as $message) { 
+            $dateTime = new DateTime($message['timestamp']);
+            $weekday = $dateTime->format('l');
+            $time = $dateTime->format('H:i'); ?>
+		<div class='chat-message chat-color-<?=($message['user_id']%10)+1?>'><?=$translator->__($weekday, $language)?> <?=$time?> <?=$message['username']?>: <?=$message['message']?></div>
+        <?php } ?>
+	</div>
+    <form id='chat-form' method='POST' action=''>
+        <div class='chat-controls'>
+			<input id='chat-message' name='chat-message' class='chat-input' maxlength='250'></input>
+			<input id='chat-submit' type='submit' class='chat-submit' value='<?=$translator->__('Send', $language)?>'>
+        </div>
+	</form>
+</div>
+<div>
 	<p><?=$translator->__('Goal stats',$language)?>:</p>
 	<table>
 		<tr>
 			<td><?=$translator->__('Goals home',$language)?>:</td>
-			<td><div id="goal_home"><?=$user_team['goal_account_home_1']+$user_team['goal_account_home_2']+$user_team['goal_account_home_3']?> (<?=$user_team['goal_account_home_1']?>, <?=$user_team['goal_account_home_2']?>, <?=$user_team['goal_account_home_3']?>)</div></td>
+			<td><div id='goal_home'><?=$user_team['goal_account_home_1']+$user_team['goal_account_home_2']+$user_team['goal_account_home_3']?> (<?=$user_team['goal_account_home_1']?>, <?=$user_team['goal_account_home_2']?>, <?=$user_team['goal_account_home_3']?>)</div></td>
 		</tr>
 		<tr>
 			<td><?=$translator->__('Goals away',$language)?>:</td>
-			<td><div id="goal_away"><?=$user_team['goal_account_away_1']+$user_team['goal_account_away_2']+$user_team['goal_account_away_3']?> (<?=$user_team['goal_account_away_1']?>, <?=$user_team['goal_account_away_2']?>, <?=$user_team['goal_account_away_3']?>)</div></td>
+			<td><div id='goal_away'><?=$user_team['goal_account_away_1']+$user_team['goal_account_away_2']+$user_team['goal_account_away_3']?> (<?=$user_team['goal_account_away_1']?>, <?=$user_team['goal_account_away_2']?>, <?=$user_team['goal_account_away_3']?>)</div></td>
 		</tr>
 		<tr>
 			<td><?=$translator->__('Goals overtime',$language)?>:</td>
-			<td><div id="goal_overtime"><?=$user_team['goal_account_overtime']?></div></td>
+			<td><div id='goal_overtime'><?=$user_team['goal_account_overtime']?></div></td>
 		</tr>
 		<tr>
 			<td><?=$translator->__('Earned bonus goals',$language)?>:</td>
@@ -444,24 +464,75 @@ $(document).ready(function(){
     var form = $(this).closest('form');
     var formData = form.serialize();
 	const inputField = $(this);
-	
+
+	if(!formData.includes('chat-message')) {
+      $.ajax({
+        type: 'POST',
+        url: 'home_save.php',
+        data: formData,
+        success: function(response) {
+		  const userTeam = JSON.parse(response);
+		  var home_sum = userTeam['goal_account_home_1'] + userTeam['goal_account_home_2'] + userTeam['goal_account_home_3'];
+		  var away_sum = userTeam['goal_account_away_1'] + userTeam['goal_account_away_2'] + userTeam['goal_account_away_3'];
+		  document.getElementById("goal_home").innerHTML = home_sum + " (" + userTeam['goal_account_home_1'] + ", " + userTeam['goal_account_home_2'] + ", " + userTeam['goal_account_home_3'] + ")";
+		  document.getElementById("goal_away").innerHTML = away_sum + " (" + userTeam['goal_account_away_1'] + ", " + userTeam['goal_account_away_2'] + ", " + userTeam['goal_account_away_3'] + ")";
+		  document.getElementById("goal_overtime").innerHTML = userTeam["goal_account_overtime"];
+		  inputField.removeClass('error-input');
+        },
+        error: function() {
+		  inputField.addClass('error-input');
+        }
+      });
+	}
+  });
+
+  $('#chat-container').scrollTop($('#chat-container')[0].scrollHeight);
+
+  function updateChat() {
     $.ajax({
-      type: 'POST',
-      url: 'home_save.php',
-      data: formData,
-      success: function(response) {
-		const userTeam = JSON.parse(response);
-		var home_sum = userTeam['goal_account_home_1'] + userTeam['goal_account_home_2'] + userTeam['goal_account_home_3'];
-		var away_sum = userTeam['goal_account_away_1'] + userTeam['goal_account_away_2'] + userTeam['goal_account_away_3'];
-		document.getElementById("goal_home").innerHTML = home_sum + " (" + userTeam['goal_account_home_1'] + ", " + userTeam['goal_account_home_2'] + ", " + userTeam['goal_account_home_3'] + ")";
-		document.getElementById("goal_away").innerHTML = away_sum + " (" + userTeam['goal_account_away_1'] + ", " + userTeam['goal_account_away_2'] + ", " + userTeam['goal_account_away_3'] + ")";
-		document.getElementById("goal_overtime").innerHTML = userTeam["goal_account_overtime"];
-		inputField.removeClass('error-input');
-      },
-      error: function() {
-		inputField.addClass('error-input');
-      }
+		type: 'POST',
+		url: 'chat.php',
+		success: function(response) {
+            const messages = JSON.parse(response);
+            $('#chat-container').empty();
+            messages.forEach(message => {
+                const chatMessage = document.createElement('div');
+                chatMessage.className = 'chat-message chat-color-' + ((message.user_id%10) + 1);
+                const date = new Date(message.timestamp);
+                const weekday = new Intl.DateTimeFormat('de-DE', { weekday: 'long' }).format(date);
+                const time = date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                chatMessage.textContent = weekday + ' ' + time + ' ' + message.username + ': ' + message.message;
+
+                $('#chat-container').append(chatMessage);
+            });
+            $('#chat-container').scrollTop($('#chat-container')[0].scrollHeight);
+        }
     });
+  }
+
+  const interval = setInterval(updateChat, 15000);
+
+  $('#chat-form').submit(function(event) {
+	event.preventDefault();
+    if($('#chat-message').val() !='') {
+	  var formData = { message: $('#chat-message').val() };
+	  $.ajax({
+		type: 'POST',
+		url: 'chat.php',
+		data: formData,
+		success: function(response) {
+          $('#chat-message').val('');
+          $('#chat-submit').prop('disabled', true);
+          updateChat();
+          setTimeout(function() {
+            $('#chat-submit').prop('disabled', false);
+          }, 5000);
+		},
+		error: function() {
+		  console.log("chat error");
+		}
+	  });
+    }
   });
 });
 </script>

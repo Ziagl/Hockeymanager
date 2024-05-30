@@ -35,6 +35,21 @@ td.goal-container { text-align: center; }
 .error-input { background-color: rgb(255, 96, 96); }
 .statistic-table { width: 100%; }
 .admin-message { background-color: #ddd; font-style: italic; padding: 10px; text-align: center; }
+.chat-container { background-color: #ddd; border-radius: 5px; padding: 10px; overflow: auto; height: 105px; }
+.chat-message { margin-bottom: 4px; }
+.chat-controls { padding-top: 10px; display: flex; }
+.chat-input { flex-grow: 1; margin-right: 10px; font-size: large; }
+.chat-submit { font-size: large; }
+.chat-color-1 { color: black }
+.chat-color-2 { color: blue }
+.chat-color-3 { color: red }
+.chat-color-4 { color: green }
+.chat-color-5 { color: yellow }
+.chat-color-6 { color: orange }
+.chat-color-7 { color: lightcoral }
+.chat-color-8 { color: darkolivegreen }
+.chat-color-9 { color: blueviolet }
+.chat-color-10 { color: brown }
 
 @media (max-width: 600px) {
     .tabcontent { flex: 1 1 100%; }
