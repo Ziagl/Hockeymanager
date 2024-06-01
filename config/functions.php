@@ -1344,7 +1344,7 @@ function display_game_result($game)
         $home = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'] + $game['home_team_goal_overtime'];
         $away = $game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'] + $game['away_team_goal_overtime'];
         if($home == $away) {
-            if($game['home_win'] == 1) {
+            if($game['home_win'] == 1 || $game['home_team_penalty_win']) {
                 return ($home+1).'*:'.$away;
             } else {
                 return $home.':'.($away+1).'*';
