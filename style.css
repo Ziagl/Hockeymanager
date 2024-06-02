@@ -58,3 +58,11 @@ td.goal-container { text-align: center; }
     .hidden-xs { display: none !important; }
     th.horizontal-xs { writing-mode: vertical-lr; text-orientation: upright; }
 }
+
+@media (max-width: 1500px) {
+    .tabcontent { flex: 1 1 100%; }
+    .image-text-wrapper { justify-content: center; }
+    .image-text-wrapper p { display: none; }
+    .hidden-md { display: none !important; }
+    th.horizontal-md { writing-mode: vertical-lr; text-orientation: upright; }
+}

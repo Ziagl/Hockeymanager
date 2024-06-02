@@ -340,16 +340,16 @@ for($i = 0; $i < count($games); $i += 7) {
 		<tr>
 			<th>#</th>
 			<th><?=$translator->__('Name',$language)?></th>
-			<th class='hidden-xs'><?=$translator->__('Games',$language)?></th>
 			<th><?=$translator->__('Username',$language)?></th>
-			<th class='horizontal-xs'><?=$translator->__('Won',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('Games',$language)?></th>
+			<th class='horizontal-xs horizontal-md'><?=$translator->__('Won',$language)?></th>
 			<th class='hidden-xs'><?=$translator->__('OT',$language)?></th>
 			<th class='hidden-xs'><?=$translator->__('PE',$language)?></th>
-			<th class='horizontal-xs'><?=$translator->__('Lost',$language)?></th>
+			<th class='horizontal-xs horizontal-md'><?=$translator->__('Lost',$language)?></th>
 			<th class='hidden-xs'><?=$translator->__('OT',$language)?></th>
 			<th class='hidden-xs'><?=$translator->__('PE',$language)?></th>
 			<th class='horizontal-xs'><?=$translator->__('Goals',$language)?></th>
-			<th class='hidden-xs'><?=$translator->__('Difference',$language)?></th>
+			<th class='hidden-xs hidden-md'><?=$translator->__('Difference',$language)?></th>
 			<th class='horizontal-xs'><?=$translator->__('Points',$language)?></th>
 		</tr>
 <?php
@@ -401,7 +401,7 @@ foreach($teams as $team) {
 			<td class='goal-container hidden-xs'><?=$team['lose_ot']?></td>
 			<td class='goal-container hidden-xs'><?=$team['lose_pe']?></td>
 			<td class='goal-container'><?=$team['goals_shot'].":".$team['goals_received']?></td>
-			<td class='goal-container hidden-xs'><?=$team['goals_shot'] - $team['goals_received']?></td>
+			<td class='goal-container hidden-xs hidden-md'><?=$team['goals_shot'] - $team['goals_received']?></td>
 			<td class='goal-container'><?=$team['points']?></td>
 		</tr>
 <?php
