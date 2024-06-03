@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Erstellungszeit: 18. Mai 2024 um 17:40
+-- Erstellungszeit: 03. Jun 2024 um 18:29
 -- Server-Version: 10.6.16-MariaDB-0ubuntu0.22.04.1-log
 -- PHP-Version: 7.4.33
 
@@ -19,8 +19,21 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Datenbank: `d0406fd1`
+-- Datenbank: `d03f724a`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `Chat`
+--
+
+CREATE TABLE `Chat` (
+  `id` int(11) NOT NULL,
+  `timestamp` datetime NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `message` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -217,7 +230,8 @@ CREATE TABLE `State` (
   `win_five_times` tinyint(1) NOT NULL,
   `win_five_goals` tinyint(1) NOT NULL,
   `message` text NOT NULL,
-  `admin_mail` varchar(255) NOT NULL
+  `admin_mail` varchar(255) NOT NULL,
+  `chat_message_count` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -271,6 +285,12 @@ CREATE TABLE `User` (
 --
 -- Indizes der exportierten Tabellen
 --
+
+--
+-- Indizes für die Tabelle `Chat`
+--
+ALTER TABLE `Chat`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indizes für die Tabelle `Country`
@@ -347,6 +367,12 @@ ALTER TABLE `User`
 --
 -- AUTO_INCREMENT für exportierte Tabellen
 --
+
+--
+-- AUTO_INCREMENT für Tabelle `Chat`
+--
+ALTER TABLE `Chat`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT für Tabelle `Country`
