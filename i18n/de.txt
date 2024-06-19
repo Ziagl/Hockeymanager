@@ -79,3 +79,4 @@ Thursday=Donnerstag
 Friday=Freitag
 Saturday=Samstag
 Sunday=Sonntag
+Delete=Entfernen

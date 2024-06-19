@@ -65,6 +65,13 @@ if(isset($_POST['chat_message_count'])) {
 	$stmt->bind_param('i', $_POST['chat_message_count']);
 	$stmt->execute();
 }
+//delete user
+if(isset($_POST['user_id']) && isset($_POST['delete']))
+{
+	$stmt = $con->prepare('DELETE FROM User WHERE id = ?');
+	$stmt->bind_param('i', $_POST['user_id']);
+	$stmt->execute();
+}
 
 // get data from database
 
@@ -193,6 +200,13 @@ include 'content/header.php';
 					if($user['dream_team_id'] == $team['id'])
 						echo $team['name'];
 				} ?>
+			</td>
+			<td>
+				<form method="POST" action="">
+					<input type="submit" name="delete_user" value="<?=$translator->__('Delete',$language)?>"></input>
+					<input type="hidden" name="user_id" value="<?=$user['id']?>"></input>
+					<input type="hidden" name="delete" value="1"></input>
+				</form>
 			</td>
 			<td><?php if($user['admin'] == 1) {?><i class="fas fa-check-circle"></i><?php } ?></td>
 		</tr>
