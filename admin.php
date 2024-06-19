@@ -173,15 +173,24 @@ include 'content/header.php';
 	<table>
 		<tr>
 			<th><?=$translator->__('Username',$language)?></th>
+			<th><?=$translator->__('Last Login',$language)?></th>
 			<th><?=$translator->__('Email',$language)?></th>
 			<th><?=$translator->__('Activation',$language)?></th>
 			<th><?=$translator->__('Team',$language)?></th>
 			<th><?=$translator->__('Dream Team',$language)?></th>
 			<th><?=$translator->__('Admin',$language)?></th>
 		</tr>
-<?php foreach ($users as $user) { ?>
+<?php foreach ($users as $user) { 
+	$dateTime = new DateTime($user['last_login']);
+	$time = $dateTime->format('m.d.Y');
+	if (str_contains($time, '0001'))
+	{
+		$time = "";
+	}
+	?>
 		<tr>
 			<td><?=$user['username']?></td>
+			<td><?=$time?></td>
 			<td><?=$user['email']?></td>
 			<td><?=$user['activation_code']?></td>
 			<td>

@@ -31,6 +31,11 @@ if ($stmt = $con->prepare('SELECT id, admin, password FROM User WHERE username =
             $_SESSION['id'] = $id;
             $_SESSION['admin'] = $admin;
 
+            //Update last login
+            $stmt = $con->prepare('UPDATE User SET last_login = NOW() WHERE id = ?');
+            $stmt->bind_param('i', $id);
+            $stmt->execute();
+
             header('Location: home.php');
         } else {
             // Incorrect password

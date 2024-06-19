@@ -80,3 +80,4 @@ Friday=Freitag
 Saturday=Samstag
 Sunday=Sonntag
 Delete=Entfernen
+Last Login=Letzter Login
