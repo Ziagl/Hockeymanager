@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Erstellungszeit: 03. Jun 2024 um 18:29
--- Server-Version: 10.6.16-MariaDB-0ubuntu0.22.04.1-log
--- PHP-Version: 7.4.33
+-- Erstellungszeit: 10. Jul 2024 um 20:32
+-- Server-Version: 10.6.18-MariaDB-0ubuntu0.22.04.1-log
+-- PHP-Version: 7.4.33-nmm5
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -279,7 +279,8 @@ CREATE TABLE `User` (
   `activation_code` varchar(50) NOT NULL,
   `admin` tinyint(1) NOT NULL DEFAULT 0,
   `team_id` int(11) NOT NULL,
-  `dream_team_id` int(11) NOT NULL
+  `dream_team_id` int(11) NOT NULL,
+  `last_login` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
