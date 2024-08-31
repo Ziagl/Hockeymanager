@@ -42,9 +42,9 @@ $index = 0;
 foreach($teams as $team) {
 	$table_playoff = 8;
 	$table_relegate = 0;
-	if($league['name'] == 'NHL') {
+	/*if($league['name'] == 'NHL') {
 		$table_playoff = 16;
-	}
+	}*/
 	if($league['id'] == 1) {
 		$table_relegate = 2;
 	}
