@@ -359,9 +359,9 @@ foreach($teams as $team) {
 	$image = "images/".$team['id'].".png";
 	$table_playoff = 8;
 	$table_relegate = 0;
-	if($user_league['name'] == 'NHL') {
+	/*if($user_league['name'] == 'NHL') {
 		$table_playoff = 16;
-	}
+	}*/
 	if($user_league['id'] == 1) {
 		$table_relegate = 2;
 	}
