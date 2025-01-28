@@ -1336,7 +1336,7 @@ function invert_combinations($combinations)
     return $result;
 }
 
-function display_game_result($game)
+function display_game_result($game, $inverse = false)
 {
     $home = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'];
     $away = $game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'];
@@ -1344,10 +1344,21 @@ function display_game_result($game)
         $home = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'] + $game['home_team_goal_overtime'];
         $away = $game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'] + $game['away_team_goal_overtime'];
         if($home == $away) {
-            if($game['home_win'] == 1 || $game['home_team_penalty_win']) {
-                return ($home+1).'*:'.$away;
-            } else {
-                return $home.':'.($away+1).'*';
+            if($inverse)
+            {
+                if($game['home_win'] == 1 || $game['home_team_penalty_win']) {
+                    return ($home+1).'*:'.$away;
+                } else {
+                    return $home.':'.($away+1).'*';
+                }
+            }
+            else
+            {
+                if($game['away_win'] == 1 || $game['away_team_penalty_win']) {
+                    return ($home+1).'*:'.$away;
+                } else {
+                    return $home.':'.($away+1).'*';
+                }
             }
         } else {
             return $home.':'.$away;
