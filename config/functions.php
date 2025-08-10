@@ -1352,7 +1352,7 @@ function display_game_result($game, $inverse = false)
         if($home == $away) {
             if($inverse)
             {
-                if($game['home_win'] == 1 || $game['home_team_penalty_win']) {
+                if($game['home_team_penalty_win']) {
                     return ($home+1).'*:'.$away;
                 } else {
                     return $home.':'.($away+1).'*';
@@ -1360,7 +1360,7 @@ function display_game_result($game, $inverse = false)
             }
             else
             {
-                if($game['away_win'] == 1 || $game['away_team_penalty_win']) {
+                if($game['away_team_penalty_win']) {
                     return ($home+1).'*:'.$away;
                 } else {
                     return $home.':'.($away+1).'*';
