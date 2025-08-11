@@ -395,6 +395,26 @@ function to_next_day($con)
 
     if($state['day'] == 0) {
         team_ai($con);
+        $leagues = get_all_leagues($con);
+        foreach($leagues as $league) {
+            $playdown = get_playdown_by_league_id($con, $league['id']);
+            $playoff = get_playoff_by_league_id($con, $league['id']);
+
+            // end of saison -> playdown and playoff handling
+            if(($playdown != null && $league['country_id'] == 1) || $playoff != null) {
+                // playdown day by day
+                if($playdown != null && $league['country_id'] == 1) {
+                    team_ai_playdown($con, $playdown);
+                }
+            }
+            // playoff day by day
+            if($playoff != null) {
+                // move to next game day
+                if($playoff['last_game_day'] < 7) {
+                    team_ai_playoff($con, $playoff);
+                }
+            }
+        }
     }
 
     $state['day'] = ((int)$state['day']) + 1;
@@ -413,8 +433,6 @@ function to_next_day($con)
             if(($playdown != null && $league['country_id'] == 1) || $playoff != null) {
                 // playdown day by day
                 if($playdown != null && $league['country_id'] == 1) {
-                    team_ai_playdown($con, $playdown);
-
                     $next_game_day = $playdown['last_game_day'] + 1;
                     if($next_game_day <= $playdown['max_game_days']) {
                         update_playdown_stats($con, $next_game_day, $playdown);
@@ -430,8 +448,6 @@ function to_next_day($con)
                 if($playoff != null) {
                     // move to next game day
                     if($playoff['last_game_day'] < 7) {
-                        team_ai_playoff($con, $playoff);
-
                         // update teams
                         $round = $playoff['last_round'] + 1;
                         $game_day = $playoff['last_game_day'] + 1;
