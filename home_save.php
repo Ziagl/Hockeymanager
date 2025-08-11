@@ -2,6 +2,8 @@
 include_once 'config/functions.php';
 include 'content/session.php';
 
+$maxGoals = 10;
+
 // if user has no team yet -> team selection
 $stmt = $con->prepare('SELECT * FROM User WHERE id = ?');
 $stmt->bind_param('i', $_SESSION['id']);
@@ -41,33 +43,53 @@ if(isset($_POST['game_id'])) {
 	}
 	$periods = array('1', '2', '3');
 	$error = false;
-	foreach($periods as $period) {
-		if(isset($_POST['home_team_goal_'.$period])) {
-			$statement.= ' home_team_goal_'.$period.' = '.$_POST['home_team_goal_'.$period].',';
-			$diff = $_POST['home_team_goal_'.$period] - $game_day['home_team_goal_'.$period];
-			$gah[((int)$period) - 1] = $gah[((int)$period) - 1] - $diff;
-			if($_POST['home_team_goal_'.$period] > 10 || $_POST['home_team_goal_'.$period] < 0) $error = true;
-			if($user_team['goal_account_home_'.$period] - $diff < 0) $error = true;
+
+	try
+	{
+		// it is not possible to assign more than 10 goals for a match
+		if((isset($_POST['away_team_goal_1']) && isset($_POST['away_team_goal_2']) && isset($_POST['away_team_goal_3']) && 
+			($_POST['away_team_goal_1'] + $_POST['away_team_goal_2'] + $_POST['away_team_goal_3']) > $maxGoals) ||
+			(isset($_POST['home_team_goal_1']) && isset($_POST['home_team_goal_2']) && isset($_POST['home_team_goal_3']) &&
+			($_POST['home_team_goal_1'] + $_POST['home_team_goal_2'] + $_POST['home_team_goal_3']) > $maxGoals))
+		{
+			$error = true;
 		}
-		if(isset($_POST['away_team_goal_'.$period])) {
-			$statement.= ' away_team_goal_'.$period.' = '.$_POST['away_team_goal_'.$period].',';
-			$diff = $_POST['away_team_goal_'.$period] - $game_day['away_team_goal_'.$period];
-			$gaa[((int)$period) - 1] = $gaa[((int)$period) - 1] - $diff;
-			if($_POST['away_team_goal_'.$period] > 10 || $_POST['away_team_goal_'.$period] < 0) $error = true;
-			if($user_team['goal_account_away_'.$period] - $diff < 0) $error = true;
+		else
+		{
+			// it is not possible to assign more than 10 goals for one period
+			foreach($periods as $period) {
+				if(isset($_POST['home_team_goal_'.$period])) {
+					$statement.= ' home_team_goal_'.$period.' = '.$_POST['home_team_goal_'.$period].',';
+					$diff = $_POST['home_team_goal_'.$period] - $game_day['home_team_goal_'.$period];
+					$gah[((int)$period) - 1] = $gah[((int)$period) - 1] - $diff;
+					if($_POST['home_team_goal_'.$period] > $maxGoals || $_POST['home_team_goal_'.$period] < 0) $error = true;
+					if($user_team['goal_account_home_'.$period] - $diff < 0) $error = true;
+				}
+				if(isset($_POST['away_team_goal_'.$period])) {
+					$statement.= ' away_team_goal_'.$period.' = '.$_POST['away_team_goal_'.$period].',';
+					$diff = $_POST['away_team_goal_'.$period] - $game_day['away_team_goal_'.$period];
+					$gaa[((int)$period) - 1] = $gaa[((int)$period) - 1] - $diff;
+					if($_POST['away_team_goal_'.$period] > $maxGoals || $_POST['away_team_goal_'.$period] < 0) $error = true;
+					if($user_team['goal_account_away_'.$period] - $diff < 0) $error = true;
+				}
+			}
+			if(isset($_POST['home_team_goal_overtime'])) {
+				$statement.= ' home_team_goal_overtime = '.$_POST['home_team_goal_overtime'].',';
+				$diff = $_POST['home_team_goal_overtime'] - $game_day['home_team_goal_overtime'];
+				$gao = $gao - $diff;
+				if($user_team['goal_account_overtime'] - $diff < 0 || $_POST['home_team_goal_overtime'] > 1) $error = true;
+			}
+			if(isset($_POST['away_team_goal_overtime'])) {
+				$statement.= ' away_team_goal_overtime = '.$_POST['away_team_goal_overtime'].',';
+				$diff = $_POST['away_team_goal_overtime'] - $game_day['away_team_goal_overtime'];
+				$gao = $gao - $diff;
+				if($user_team['goal_account_overtime'] - $diff < 0 || $_POST['away_team_goal_overtime'] > 1) $error = true;
+			}
 		}
 	}
-	if(isset($_POST['home_team_goal_overtime'])) {
-		$statement.= ' home_team_goal_overtime = '.$_POST['home_team_goal_overtime'].',';
-		$diff = $_POST['home_team_goal_overtime'] - $game_day['home_team_goal_overtime'];
-		$gao = $gao - $diff;
-		if($user_team['goal_account_overtime'] - $diff < 0 || $_POST['home_team_goal_overtime'] > 1) $error = true;
-	}
-	if(isset($_POST['away_team_goal_overtime'])) {
-		$statement.= ' away_team_goal_overtime = '.$_POST['away_team_goal_overtime'].',';
-		$diff = $_POST['away_team_goal_overtime'] - $game_day['away_team_goal_overtime'];
-		$gao = $gao - $diff;
-		if($user_team['goal_account_overtime'] - $diff < 0 || $_POST['away_team_goal_overtime'] > 1) $error = true;
+	catch(Error $e)
+	{
+		$error = true;
 	}
 
 	if($error){
