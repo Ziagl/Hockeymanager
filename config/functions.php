@@ -325,6 +325,38 @@ function playoff_games_by_league($con, $playoff)
     return $games;
 }
 
+function playoff_tables_by_league($con, $playoff)
+{
+    $games = playoff_games_by_league($con, $playoff);
+
+    $result = array();
+    for($i = 0; $i < count($games); $i += 7) 
+    {
+	    $team1_wins = 0;
+	    $team2_wins = 0;
+        $team1_id = $games[$i]['team1_id'];
+        for($j=0; $j<7; ++$j)
+        {
+            if($playoff['last_game_day'] >= $games[$i+$j]['game_day'])
+            {
+                if($games[$i+$j]['team1_id'] == $team1_id)
+                {
+                    if($games[$i+$j]['home_win'] > 0) $team1_wins++; else $team2_wins++;
+                }
+                else
+                {
+                    if($games[$i+$j]['home_win'] > 0) $team2_wins++; else $team1_wins++;
+                }
+            }
+        }
+        $element1 = [$games[$i]['team1_id'], $games[$i]['team1'], $team1_wins, $team2_wins];
+        $element2 = [$games[$i]['team2_id'], $games[$i]['team2'], $team2_wins, $team1_wins];
+        $line = [$element1, $element2];
+        $result[] = $line;
+    }
+    return $result;
+}
+
 function get_game_day($con)
 {
     $stmt = $con->prepare('SELECT * FROM State WHERE id = 1');
