@@ -36,6 +36,18 @@ function get_playoff_team_by_id($con, $id)
     return $user_team;
 }
 
+function get_playoff_team_by_team_id($con, $team_id)
+{
+    $stmt = $con->prepare('SELECT * FROM PlayoffTeam WHERE team_id = ?');
+    $stmt->bind_param('i', $team_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user_team = $result->fetch_array();
+    $stmt->close();
+
+    return $user_team;
+}
+
 function get_team_by_points($con, $id, $type) // type...0 league, 1 playdown
 {
     if($type == 1) {
@@ -272,6 +284,21 @@ function get_games_of_playoff_and_round_and_game_day($con, $playoff, $game_day, 
     return $games;
 }
 
+function get_games_of_playoff_and_round($con, $playoff, $round)
+{
+    $stmt = $con->prepare('SELECT * FROM PlayoffGame WHERE playoff_id = ? AND round = ?');
+    $stmt->bind_param('ii', $playoff['id'], $round);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $games = array();
+    while($game = $result->fetch_array()) {
+        $games[] = $game;
+    }
+    $stmt->close();
+
+    return $games;
+}
+
 function find_sub_league($con, $league)
 {
     $next_division = ((int)$league['division']) + 1;
@@ -328,29 +355,16 @@ function playoff_games_by_league($con, $playoff)
 function playoff_tables_by_league($con, $playoff)
 {
     $games = playoff_games_by_league($con, $playoff);
+    $game_day = $playoff['last_game_day'] + 1;
 
+    $team_wins = count_wins_of_team($con, $games, $game_day);
     $result = array();
     for($i = 0; $i < count($games); $i += 7) 
     {
-	    $team1_wins = 0;
-	    $team2_wins = 0;
         $team1_id = $games[$i]['team1_id'];
-        for($j=0; $j<7; ++$j)
-        {
-            if($playoff['last_game_day'] >= $games[$i+$j]['game_day'])
-            {
-                if($games[$i+$j]['team1_id'] == $team1_id)
-                {
-                    if($games[$i+$j]['home_win'] > 0) $team1_wins++; else $team2_wins++;
-                }
-                else
-                {
-                    if($games[$i+$j]['home_win'] > 0) $team2_wins++; else $team1_wins++;
-                }
-            }
-        }
-        $element1 = [$games[$i]['team1_id'], $games[$i]['team1'], $team1_wins, $team2_wins];
-        $element2 = [$games[$i]['team2_id'], $games[$i]['team2'], $team2_wins, $team1_wins];
+        $team2_id = $games[$i]['team2_id'];
+        $element1 = [$team1_id, $games[$i]['team1'], $team_wins[$team1_id], $team_wins[$team2_id]];
+        $element2 = [$team2_id, $games[$i]['team2'], $team_wins[$team2_id], $team_wins[$team1_id]];
         $line = [$element1, $element2];
         $result[] = $line;
     }
@@ -835,6 +849,11 @@ function team_ai_playoff($con, $playoff)
     $round = $playoff['last_round'] + 1;
     $games = get_games_of_playoff_and_round_and_game_day($con, $playoff, $game_day, $round);
     foreach($games as $game) {
+        // skip all unnecessary games (one team already won)
+        if($game['skip'] > 0)
+        {
+            continue;
+        }
         if(is_ai_team($con, $game['home_team_id'])) {
             $team = get_team_by_id($con, $game['home_team_id']);
 
@@ -866,6 +885,52 @@ function team_ai_playoff($con, $playoff)
             $stmt->close();
         }
     }
+    // detect if future games are necessary
+
+    // get all games of current round included this one
+    $games = get_games_of_playoff_and_round($con, $playoff, $round);
+
+    // count wins for every team
+    $team_win_counter = count_wins_of_team($con, $games, $game_day);
+
+    // for all teams: if wins >= 4 -> find all future games of this round and set skip to true
+    foreach($team_win_counter as $team_id => $wins) {
+        if($wins >= 4) {
+            // find all games of this team in this round
+            $stmt = $con->prepare('UPDATE PlayoffGame SET skip = 1 WHERE playoff_id = ? AND round = ? and game_day > ? AND (home_team_id = ? OR away_team_id = ?)');
+            $stmt->bind_param('iiiii', $playoff['id'], $round, $game_day, $team_id, $team_id);
+            $stmt->execute();
+            $stmt->close();
+        }
+    }
+}
+
+// counts wins of team
+function count_wins_of_team($con, $games, $game_day)
+{
+    $team_win_counter = array();
+    foreach($games as $game)
+    {
+        if($game['skip'] > 0)
+        {
+            continue;
+        }
+        if($game['game_day'] <= $game_day)
+        {
+            if (!isset($team_win_counter[$game['home_team_id']])) {
+                $team_win_counter[$game['home_team_id']] = 0;
+            }
+            if (!isset($team_win_counter[$game['away_team_id']])) {
+                $team_win_counter[$game['away_team_id']] = 0;
+            }
+        }
+    }
+    foreach($team_win_counter as $key => $value)
+    {
+        $teamData = get_playoff_team_by_team_id($con, $key);
+        $team_win_counter[$key] = $teamData['win'] + $teamData['win_ot'] + $teamData['win_pe'];
+    }
+    return $team_win_counter;
 }
 
 // update playdown team stats
@@ -904,12 +969,10 @@ function update_playoff_stats($con, $playoff_game_day, $playoff_round, $playoff)
         $stmt->execute();
         $stmt->close();
 
-        if($stats['home_win'] > 0) {
-            $stmt = $con->prepare('UPDATE PlayoffGame SET home_win = 1 WHERE id = ?');
-            $stmt->bind_param('i', $game['id']);
-            $stmt->execute();
-            $stmt->close();
-        }
+        $stmt = $con->prepare('UPDATE PlayoffGame SET home_win = ? WHERE id = ?');
+        $stmt->bind_param('ii', $home_win, $game['id']);
+        $stmt->execute();
+        $stmt->close();
     }
 }
 

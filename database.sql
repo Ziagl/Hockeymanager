@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Erstellungszeit: 10. Jul 2024 um 20:32
--- Server-Version: 10.6.18-MariaDB-0ubuntu0.22.04.1-log
--- PHP-Version: 7.4.33-nmm5
+-- Erstellungszeit: 11. Aug 2025 um 20:59
+-- Server-Version: 10.6.22-MariaDB-0ubuntu0.22.04.1-log
+-- PHP-Version: 7.4.33-nmm7
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -19,7 +19,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Datenbank: `d03f724a`
+-- Datenbank: `d0406fd1`
 --
 
 -- --------------------------------------------------------
@@ -192,7 +192,8 @@ CREATE TABLE `PlayoffGame` (
   `away_team_goal_overtime` int(11) NOT NULL,
   `home_team_penalty_win` int(11) NOT NULL,
   `away_team_penalty_win` int(11) NOT NULL,
-  `home_win` int(11) NOT NULL
+  `home_win` int(11) NOT NULL,
+  `skip` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

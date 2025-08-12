@@ -416,6 +416,10 @@ if($playoff != null) {
 	<?php
 		$index = 0;
 		foreach($game_day as $game) {
+			if(isset($game['skip']) && $game['skip'] == 1)
+			{
+				continue;
+			}
 			$index++;
 			$home_goals = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'];
 			$away_goals = $game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'];
