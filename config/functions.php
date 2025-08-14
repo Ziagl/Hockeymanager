@@ -466,6 +466,7 @@ function to_next_day($con)
                         $round = $playoff['last_round'] + 1;
                         $game_day = $playoff['last_game_day'] + 1;
                         update_playoff_stats($con, $game_day, $round, $playoff);
+                        mark_playoff_game_with_skip($con, $playoff, $round, $game_day);
 
                         $stmt = $con->prepare('UPDATE Playoff SET last_game_day = last_game_day + 1 WHERE id = ?');
                         $stmt->bind_param('i', $playoff['id']);
@@ -885,8 +886,11 @@ function team_ai_playoff($con, $playoff)
             $stmt->close();
         }
     }
-    // detect if future games are necessary
+}
 
+// detect if future games are necessary
+function mark_playoff_game_with_skip($con, $playoff, $round, $game_day)
+{
     // get all games of current round included this one
     $games = get_games_of_playoff_and_round($con, $playoff, $round);
 

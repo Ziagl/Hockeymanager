@@ -93,7 +93,7 @@ if($playoff != null) {
 	$playoff_team = get_playoff_team_by_id($con, $user['team_id']);
 	$game_day = $playoff['last_game_day'] + 1;
 	$round = $playoff['last_round'] + 1;
-	$stmt = $con->prepare('SELECT * FROM PlayoffGame WHERE game_day = ? AND round = ? AND (home_team_id = ? OR away_team_id = ?)');
+	$stmt = $con->prepare('SELECT * FROM PlayoffGame WHERE game_day = ? AND round = ? AND (home_team_id = ? OR away_team_id = ?) AND skip = 0');
 	$stmt->bind_param('iiii', $game_day, $round, $user['team_id'], $user['team_id']);
 }
 else if($playdown != null) {
