@@ -17,6 +17,84 @@ include 'content/header.php';
     foreach($leagues as $league) {	
 ?>
 <div id='<?=$league['name']?>' class='tabcontent' style='display: none;'>
+<!-- playoff -->
+<?php 
+$teams = get_team_by_points_of_league($con, $league['id']);
+$playdown = get_playdown_by_league_id($con, $league['id']);
+$playoff = get_playoff_by_league_id($con, $league['id']);
+if($playoff) { ?>
+<div class='statistic-table'>
+    <p><?=$translator->__('Playoff table',$language)?> <?=$league['name']?></p>
+    <table>
+		<tr>
+			<th>#</th>
+			<th><?=$translator->__('Name',$language)?></th>
+			<th><?=$translator->__('Won',$language)?></th>
+			<th><?=$translator->__('Lost',$language)?></th>
+		</tr>
+<?php
+	$data =	playoff_tables_by_league($con, $playoff);
+	$index = 0;
+	foreach($data as $table) {
+		$index++;
+		$teamNumber = 0;
+		foreach($table as $team) {
+			$teamNumber++;
+?>
+		<tr>
+			<td><?php if($teamNumber % 2 != 0) echo $index; ?></td>
+			<td><div class="image-text-wrapper"><img src='<?="images/".$team[0].".png"?>' class='team-logo'/><?php echo $team[1] ?></td>
+			<td><?php echo $team[2] ?></td>
+			<td><?php echo $team[3] ?></td>
+		</tr>
+<?php
+		}
+	}
+?>
+	</table>
+</div>
+<?php } if($playdown) { ?>
+<div class='statistic-table'>
+	<p><?=$translator->__('Playdown table',$language)?> <?=$league['name']?></p>
+	<table>
+		<tr>
+			<th>#</th>
+			<th><?=$translator->__('Name',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('Games',$language)?></th>
+			<th class='horizontal-xs horizontal-md'><?=$translator->__('Won',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('OT',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('PE',$language)?></th>
+			<th class='horizontal-xs horizontal-md'><?=$translator->__('Lost',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('OT',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('PE',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Goals',$language)?></th>
+			<th class='hidden-xs hidden-md'><?=$translator->__('Difference',$language)?></th>
+			<th class='horizontal-xs'><?=$translator->__('Points',$language)?></th>
+		</tr>
+<?php
+$teams = get_team_by_points($con, $teams[count($teams)-1]['id'], 1);
+$index = 0;
+foreach($teams as $team) { 
+?>
+		<tr>
+			<td><?=++$index?></td>
+			<td><div class="image-text-wrapper"><img src='<?="images/".$team['team_id'].".png"?>' class='team-logo'/><?=$team['team_name']?></div></td>
+			<td class='goal-container hidden-xs'><?=$team['win']+$team['win_ot']+$team['win_pe']+$team['lose']+$team['lose_ot']+$team['lose_pe']?></td>
+			<td class='goal-container'><?=$team['win']?></td>
+			<td class='goal-container hidden-xs'><?=$team['win_ot']?></td>
+			<td class='goal-container hidden-xs'><?=$team['win_pe']?></td>
+			<td class='goal-container'><?=$team['lose']?></td>
+			<td class='goal-container hidden-xs'><?=$team['lose_ot']?></td>
+			<td class='goal-container hidden-xs'><?=$team['lose_pe']?></td>
+			<td class='goal-container'><?=$team['goals_shot'].":".$team['goals_received']?></td>
+			<td class='goal-container hidden-xs hidden-md'><?=$team['goals_shot'] - $team['goals_received']?></td>
+			<td class='goal-container'><?=$team['points']?></td>
+		</tr>
+<?php } ?>
+	</table>
+</div>
+<?php } ?>
+<!-- league -->
 <div class='statistic-table'>
     <p><?=$translator->__('League table',$language)?> <?=$league['name']?> (<?=$league['last_game_day']?>/<?=$league['max_game_days']?>):</p>
     <table>
@@ -36,7 +114,6 @@ include 'content/header.php';
 			<th class='horizontal-xs'><?=$translator->__('Points',$language)?></th>
 		</tr>
 <?php
-$teams = get_team_by_points_of_league($con, $league['id']);
 $player_league = $league;
 $index = 0;
 foreach($teams as $team) {
@@ -92,84 +169,6 @@ foreach($teams as $team) {
 ?>
 	</table>
 </div>
-<?php 
-$playdown = get_playdown_by_league_id($con, $league['id']);
-$playoff = get_playoff_by_league_id($con, $league['id']);
-if($playoff) { ?>
-<div class='statistic-table'>
-    <p><?=$translator->__('Playoff table',$language)?> <?=$league['name']?></p>
-    <table>
-		<tr>
-			<th>#</th>
-			<th><?=$translator->__('Name',$language)?></th>
-			<th><?=$translator->__('Won',$language)?></th>
-			<th><?=$translator->__('Lost',$language)?></th>
-		</tr>
-	<?php
-	$data =	playoff_tables_by_league($con, $playoff);
-	$index = 0;
-	foreach($data as $table) {
-		$index++;
-		$teamNumber = 0;
-		foreach($table as $team) {
-			$teamNumber++;
-	?>
-		<tr>
-			<td><?php if($teamNumber % 2 != 0) echo $index; ?></td>
-			<td><div class="image-text-wrapper"><img src='<?="images/".$team[0].".png"?>' class='team-logo'/><?php echo $team[1] ?></td>
-			<td><?php echo $team[2] ?></td>
-			<td><?php echo $team[3] ?></td>
-		</tr>
-	<?php
-		}
-	}
-	?>
-	</table>
-</div>
-<?php } ?>
-<?php if($playdown) { ?>
-<div class='statistic-table'>
-	<p><?=$translator->__('Playdown table',$language)?> <?=$league['name']?></p>
-	<table>
-		<tr>
-			<th>#</th>
-			<th><?=$translator->__('Name',$language)?></th>
-			<th class='hidden-xs'><?=$translator->__('Games',$language)?></th>
-			<th class='horizontal-xs horizontal-md'><?=$translator->__('Won',$language)?></th>
-			<th class='hidden-xs'><?=$translator->__('OT',$language)?></th>
-			<th class='hidden-xs'><?=$translator->__('PE',$language)?></th>
-			<th class='horizontal-xs horizontal-md'><?=$translator->__('Lost',$language)?></th>
-			<th class='hidden-xs'><?=$translator->__('OT',$language)?></th>
-			<th class='hidden-xs'><?=$translator->__('PE',$language)?></th>
-			<th class='horizontal-xs'><?=$translator->__('Goals',$language)?></th>
-			<th class='hidden-xs hidden-md'><?=$translator->__('Difference',$language)?></th>
-			<th class='horizontal-xs'><?=$translator->__('Points',$language)?></th>
-		</tr>
-<?php
-$teams = get_team_by_points($con, $teams[count($teams)-1]['id'], 1);
-$index = 0;
-foreach($teams as $team) {
-	?>
-		<tr>
-			<td><?=++$index?></td>
-			<td><div class="image-text-wrapper"><img src='<?="images/".$team['team_id'].".png"?>' class='team-logo'/><?=$team['team_name']?></div></td>
-			<td class='goal-container hidden-xs'><?=$team['win']+$team['win_ot']+$team['win_pe']+$team['lose']+$team['lose_ot']+$team['lose_pe']?></td>
-			<td class='goal-container'><?=$team['win']?></td>
-			<td class='goal-container hidden-xs'><?=$team['win_ot']?></td>
-			<td class='goal-container hidden-xs'><?=$team['win_pe']?></td>
-			<td class='goal-container'><?=$team['lose']?></td>
-			<td class='goal-container hidden-xs'><?=$team['lose_ot']?></td>
-			<td class='goal-container hidden-xs'><?=$team['lose_pe']?></td>
-			<td class='goal-container'><?=$team['goals_shot'].":".$team['goals_received']?></td>
-			<td class='goal-container hidden-xs hidden-md'><?=$team['goals_shot'] - $team['goals_received']?></td>
-			<td class='goal-container'><?=$team['points']?></td>
-		</tr>
-<?php
-}
-?>
-	</table>
-</div>
-<?php } ?>
 <?php 
 // display league table
 $games = get_games_by_league($con, $player_league);
