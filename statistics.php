@@ -52,6 +52,49 @@ if($playoff) { ?>
 	}
 ?>
 	</table>
+<?php
+	// display playoff games
+	$games = get_games_by_playoff($con, $playoff);
+	foreach($games as $game_day) {
+?>
+	<p><?=$translator->__('Game day',$language)?> <?=$game_day[0]['game_day']?></p>
+	<table>
+		<tr>
+			<th>#</th>
+			<th><?=$translator->__('Team',$language)?></th>
+			<th><?=$translator->__('Team',$language)?></th>
+			<th><?=$translator->__('Result',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('P1',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('P2',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('P3',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('Ot',$language)?></th>
+		</tr>
+	<?php
+		$index = 0;
+		foreach($game_day as $game) {
+			if(isset($game['skip']) && $game['skip'] == 1)
+			{
+				continue;
+			}
+			$index++;
+			$home_goals = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'];
+			$away_goals = $game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'];
+	?>
+		<tr>
+			<td><?=$index?></td>
+			<td><img src='images/<?=$game['home_id']?>.png' class='team-logo-small'/><?=$game['home']?></td>
+			<td><img src='images/<?=$game['away_id']?>.png' class='team-logo-small'/><?=$game['away']?></td>
+			<td class='goal-container'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo display_game_result($game);?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'] . ":" . $game['away_team_goal_1'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'] . ":" . $game['away_team_goal_2'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'] . ":" . $game['away_team_goal_3'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day'] && $home_goals == $away_goals) echo $game['home_team_goal_overtime'] . ":" . $game['away_team_goal_overtime'];?></span></td>		
+		</tr>
+	<?php } ?>
+	</table>
+	<?php } ?>
+	<p>* <?=$translator->__('victory after penalty shootout',$language)?></p>
+<?php // display playoff games end ?>
 </div>
 <?php } if($playdown) { ?>
 <div class='statistic-table'>
@@ -92,6 +135,49 @@ foreach($teams as $team) {
 		</tr>
 <?php } ?>
 	</table>
+<?php
+	// display playdown games
+	$games = get_games_by_playdown($con, $playoff);
+	foreach($games as $game_day) {
+?>
+	<p><?=$translator->__('Game day',$language)?> <?=$game_day[0]['game_day']?></p>
+	<table>
+		<tr>
+			<th>#</th>
+			<th><?=$translator->__('Team',$language)?></th>
+			<th><?=$translator->__('Team',$language)?></th>
+			<th><?=$translator->__('Result',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('P1',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('P2',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('P3',$language)?></th>
+			<th class='hidden-xs'><?=$translator->__('Ot',$language)?></th>
+		</tr>
+	<?php
+		$index = 0;
+		foreach($game_day as $game) {
+			if(isset($game['skip']) && $game['skip'] == 1)
+			{
+				continue;
+			}
+			$index++;
+			$home_goals = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'];
+			$away_goals = $game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'];
+	?>
+		<tr>
+			<td><?=$index?></td>
+			<td><img src='images/<?=$game['home_id']?>.png' class='team-logo-small'/><?=$game['home']?></td>
+			<td><img src='images/<?=$game['away_id']?>.png' class='team-logo-small'/><?=$game['away']?></td>
+			<td class='goal-container'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo display_game_result($game);?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'] . ":" . $game['away_team_goal_1'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'] . ":" . $game['away_team_goal_2'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'] . ":" . $game['away_team_goal_3'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day'] && $home_goals == $away_goals) echo $game['home_team_goal_overtime'] . ":" . $game['away_team_goal_overtime'];?></span></td>		
+		</tr>
+	<?php } ?>
+	</table>
+	<?php } ?>
+	<p>* <?=$translator->__('victory after penalty shootout',$language)?></p>
+<?php // display playdown games end ?>
 </div>
 <?php } ?>
 <!-- league -->
