@@ -81,3 +81,4 @@ Saturday=Samstag
 Sunday=Sonntag
 Delete=Entfernen
 Last Login=Letzter Login
+Playoff round=Playoff Runde

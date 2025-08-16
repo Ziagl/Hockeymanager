@@ -19,7 +19,7 @@ include 'content/header.php';
 <div id='<?=$league['name']?>' class='tabcontent' style='display: none;'>
 <!-- playoff -->
 <?php 
-$teams = get_team_by_points_of_league($con, $league['id']);
+$teamsLeague = get_team_by_points_of_league($con, $league['id']);
 $playdown = get_playdown_by_league_id($con, $league['id']);
 $playoff = get_playoff_by_league_id($con, $league['id']);
 if($playoff) { ?>
@@ -54,8 +54,24 @@ if($playoff) { ?>
 	</table>
 <?php
 	// display playoff games
-	$games = get_games_by_playoff($con, $playoff);
+	$rounds = get_games_by_playoff($con, $playoff, true);
+	$round = count($rounds);
+	foreach($rounds as $games) { ?>
+	<p><?=$translator->__('Playoff round',$language)?> <?=$round?></p>
+<?php
 	foreach($games as $game_day) {
+		// count skipped games
+		$skipped = 0;
+		foreach($game_day as $game) {
+			if(isset($game['skip']) && $game['skip'] == 1)
+			{
+				$skipped++;
+			}
+		}
+		// do not show game day at all if all games are skipped
+		if($skipped == count($game_day)) {
+			continue;
+		}
 ?>
 	<p><?=$translator->__('Game day',$language)?> <?=$game_day[0]['game_day']?></p>
 	<table>
@@ -84,15 +100,16 @@ if($playoff) { ?>
 			<td><?=$index?></td>
 			<td><img src='images/<?=$game['home_id']?>.png' class='team-logo-small'/><?=$game['home']?></td>
 			<td><img src='images/<?=$game['away_id']?>.png' class='team-logo-small'/><?=$game['away']?></td>
-			<td class='goal-container'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo display_game_result($game);?></span></td>
-			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_1'] . ":" . $game['away_team_goal_1'];?></span></td>
-			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_2'] . ":" . $game['away_team_goal_2'];?></span></td>
-			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day']) echo $game['home_team_goal_3'] . ":" . $game['away_team_goal_3'];?></span></td>
-			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day'] && $home_goals == $away_goals) echo $game['home_team_goal_overtime'] . ":" . $game['away_team_goal_overtime'];?></span></td>		
+			<td class='goal-container'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day'] || $round < count($rounds)) echo display_game_result($game);?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day'] || $round < count($rounds)) echo $game['home_team_goal_1'] . ":" . $game['away_team_goal_1'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day'] || $round < count($rounds)) echo $game['home_team_goal_2'] . ":" . $game['away_team_goal_2'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if($game['game_day'] <= $game['last_game_day'] || $round < count($rounds)) echo $game['home_team_goal_3'] . ":" . $game['away_team_goal_3'];?></span></td>
+			<td class='goal-container hidden-xs'><span style="white-space: nowrap;"><?php if(($game['game_day'] <= $game['last_game_day'] || $round < count($rounds)) && $home_goals == $away_goals) echo $game['home_team_goal_overtime'] . ":" . $game['away_team_goal_overtime'];?></span></td>		
 		</tr>
 	<?php } ?>
 	</table>
 	<?php } ?>
+	<?php $round--; } ?>
 	<p>* <?=$translator->__('victory after penalty shootout',$language)?></p>
 <?php // display playoff games end ?>
 </div>
@@ -115,7 +132,7 @@ if($playoff) { ?>
 			<th class='horizontal-xs'><?=$translator->__('Points',$language)?></th>
 		</tr>
 <?php
-$teams = get_team_by_points($con, $teams[count($teams)-1]['id'], 1);
+$teams = get_team_by_points($con, $teamsLeague[count($teamsLeague)-1]['id'], 1);
 $index = 0;
 foreach($teams as $team) { 
 ?>
@@ -202,7 +219,7 @@ foreach($teams as $team) {
 <?php
 $player_league = $league;
 $index = 0;
-foreach($teams as $team) {
+foreach($teamsLeague as $team) {
 	$table_playoff = 8;
 	$table_relegate = 0;
 	/*if($league['name'] == 'NHL') {

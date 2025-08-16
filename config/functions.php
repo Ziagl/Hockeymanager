@@ -195,7 +195,7 @@ function get_games_by_playdown($con, $playdown)
     return $games;
 }
 
-function get_games_by_playoff($con, $playoff)
+function get_games_by_playoff($con, $playoff, $all = false)
 {
     $stmt = $con->prepare('SELECT * FROM PlayoffGame ORDER BY round DESC');
     $stmt->execute();
@@ -203,13 +203,33 @@ function get_games_by_playoff($con, $playoff)
     $result = $result->fetch_array();
     $round = $result['round'];
 
-    $stmt = $con->prepare('SELECT g.*, thome.name as "home", thome.id as "home_id",  taway.name as "away", taway.id as "away_id", p.last_game_day FROM PlayoffGame g JOIN Team thome ON thome.id = g.home_team_id JOIN Team taway ON taway.id = g.away_team_id JOIN Playoff p ON p.id = g.playoff_id WHERE playoff_id = ? AND g.round = ? ORDER BY game_day ASC');
-    $stmt->bind_param('ii', $playoff['id'], $round);
+    if($all == true)
+    {
+        $stmt = $con->prepare('SELECT g.*, thome.name as "home", thome.id as "home_id",  taway.name as "away", taway.id as "away_id", p.last_game_day FROM PlayoffGame g JOIN Team thome ON thome.id = g.home_team_id JOIN Team taway ON taway.id = g.away_team_id JOIN Playoff p ON p.id = g.playoff_id WHERE playoff_id = ? ORDER BY game_day ASC');
+        $stmt->bind_param('i', $playoff['id']);
+    }
+    else
+    {
+        $stmt = $con->prepare('SELECT g.*, thome.name as "home", thome.id as "home_id",  taway.name as "away", taway.id as "away_id", p.last_game_day FROM PlayoffGame g JOIN Team thome ON thome.id = g.home_team_id JOIN Team taway ON taway.id = g.away_team_id JOIN Playoff p ON p.id = g.playoff_id WHERE playoff_id = ? AND g.round = ? ORDER BY game_day ASC');
+        $stmt->bind_param('ii', $playoff['id'], $round);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     $games = array();
-    while($game = $result->fetch_array()){
-        $games[$game['game_day']][] = $game;
+    if($all == true)
+    {
+        while($game = $result->fetch_array())
+        {
+            $games[$game['round']][$game['game_day']][] = $game;
+        }
+        $games = array_reverse($games);
+    }
+    else
+    {
+        while($game = $result->fetch_array())
+        {
+            $games[$game['game_day']][] = $game;
+        }
     }
     $stmt->close();
 
@@ -523,7 +543,7 @@ function to_next_day($con)
 
                             foreach($playoff_teams as $team_id) {
                                 $stmt = $con->prepare('INSERT INTO PlayoffTeam (playoff_id, team_id) VALUES (?, ?)');
-                                $stmt->bind_param('ii', $playoff['id'], $team_id);
+                                $stmt->bind_param('ii', $playoff['id'], $team_id['id']);
                                 $stmt->execute();
                                 $stmt->close();
                             }
