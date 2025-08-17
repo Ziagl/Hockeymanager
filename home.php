@@ -400,6 +400,18 @@ if($playoff != null) {
 <div id='Plan' class='tabcontent' style='display: none;'>
 	<?php
 		foreach($games as $game_day) {
+			// count skipped games
+			$skipped = 0;
+			foreach($game_day as $game) {
+				if(isset($game['skip']) && $game['skip'] == 1)
+				{
+					$skipped++;
+				}
+			}
+			// do not show game day at all if all games are skipped
+			if($skipped == count($game_day)) {
+				continue;
+			}
 	?>
 	<p><?=$translator->__('Game day',$language)?> <?=$game_day[0]['game_day']?></p>
 	<table>

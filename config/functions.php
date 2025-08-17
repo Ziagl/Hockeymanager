@@ -291,7 +291,7 @@ function get_games_of_playdown_and_game_day($con, $playdown, $game_day)
 
 function get_games_of_playoff_and_round_and_game_day($con, $playoff, $game_day, $round)
 {
-    $stmt = $con->prepare('SELECT * FROM PlayoffGame WHERE playoff_id = ? AND game_day = ? AND round = ?');
+    $stmt = $con->prepare('SELECT * FROM PlayoffGame WHERE playoff_id = ? AND game_day = ? AND round = ? AND skip < 1');
     $stmt->bind_param('iii', $playoff['id'], $game_day, $round);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -306,7 +306,7 @@ function get_games_of_playoff_and_round_and_game_day($con, $playoff, $game_day, 
 
 function get_games_of_playoff_and_round($con, $playoff, $round)
 {
-    $stmt = $con->prepare('SELECT * FROM PlayoffGame WHERE playoff_id = ? AND round = ?');
+    $stmt = $con->prepare('SELECT * FROM PlayoffGame WHERE playoff_id = ? AND round = ? AND skip < 1');
     $stmt->bind_param('ii', $playoff['id'], $round);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -510,13 +510,19 @@ function to_next_day($con)
                             $score_team_1 = 0;
                             $score_team_2 = 0;
                             
-                            if($games[$i]['home_win'] > 0) $score_team_1++; else $score_team_2++;
-                            if($games[$i + 1]['home_win'] > 0) $score_team_2++; else $score_team_1++;
-                            if($games[$i + 2]['home_win'] > 0) $score_team_1++; else $score_team_2++;
-                            if($games[$i + 3]['home_win'] > 0) $score_team_2++; else $score_team_1++;
-                            if($games[$i + 4]['home_win'] > 0) $score_team_1++; else $score_team_2++;
-                            if($games[$i + 5]['home_win'] > 0) $score_team_2++; else $score_team_1++;
-                            if($games[$i + 6]['home_win'] > 0) $score_team_1++; else $score_team_2++;
+                            if($games[$i]['home_win'] > 0 || $games[$i]['home_team_penalty_win'] > 0) $score_team_1++; else $score_team_2++;
+                            if($games[$i + 1]['home_win'] > 0 || $games[$i + 1]['home_team_penalty_win'] > 0) $score_team_2++; else $score_team_1++;
+                            if($games[$i + 2]['home_win'] > 0 || $games[$i + 2]['home_team_penalty_win'] > 0) $score_team_1++; else $score_team_2++;
+                            if($games[$i + 3]['home_win'] > 0 || $games[$i + 3]['home_team_penalty_win'] > 0) $score_team_2++; else $score_team_1++;
+                            if($games[$i + 4]['skip'] < 1) {
+                                if($games[$i + 4]['home_win'] > 0 || $games[$i + 4]['home_team_penalty_win'] > 0) $score_team_1++; else $score_team_2++;
+                            }
+                            if($games[$i + 5]['skip'] < 1) {
+                                if($games[$i + 5]['home_win'] > 0 || $games[$i + 5]['home_team_penalty_win'] > 0) $score_team_2++; else $score_team_1++;
+                            }
+                            if($games[$i + 6]['skip'] < 1) {
+                                if($games[$i + 6]['home_win'] > 0 || $games[$i + 6]['home_team_penalty_win'] > 0) $score_team_1++; else $score_team_2++;
+                            }
 
                             if($score_team_1 > $score_team_2) {
                                 $playoff_teams[] = get_team_by_id($con, $games[$i]['home_team_id']);
@@ -935,10 +941,6 @@ function count_wins_of_team($con, $games, $game_day)
     $team_win_counter = array();
     foreach($games as $game)
     {
-        if($game['skip'] > 0)
-        {
-            continue;
-        }
         if($game['game_day'] <= $game_day)
         {
             if (!isset($team_win_counter[$game['home_team_id']])) {
@@ -994,7 +996,7 @@ function update_playoff_stats($con, $playoff_game_day, $playoff_round, $playoff)
         $stmt->close();
 
         $stmt = $con->prepare('UPDATE PlayoffGame SET home_win = ? WHERE id = ?');
-        $stmt->bind_param('ii', $home_win, $game['id']);
+        $stmt->bind_param('ii', $stats['home_win'], $game['id']);
         $stmt->execute();
         $stmt->close();
     }
@@ -1477,7 +1479,7 @@ function invert_combinations($combinations)
     return $result;
 }
 
-function display_game_result($game, $inverse = false)
+function display_game_result($game)
 {
     $home = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'];
     $away = $game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'];
@@ -1485,21 +1487,10 @@ function display_game_result($game, $inverse = false)
         $home = $game['home_team_goal_1'] + $game['home_team_goal_2'] + $game['home_team_goal_3'] + $game['home_team_goal_overtime'];
         $away = $game['away_team_goal_1'] + $game['away_team_goal_2'] + $game['away_team_goal_3'] + $game['away_team_goal_overtime'];
         if($home == $away) {
-            if($inverse)
-            {
-                if($game['home_team_penalty_win']) {
-                    return ($home+1).'*:'.$away;
-                } else {
-                    return $home.':'.($away+1).'*';
-                }
-            }
-            else
-            {
-                if($game['away_team_penalty_win']) {
-                    return ($home+1).'*:'.$away;
-                } else {
-                    return $home.':'.($away+1).'*';
-                }
+            if($game['home_team_penalty_win']) {
+                return ($home+1).'*:'.$away;
+            } else {
+                return $home.':'.($away+1).'*';
             }
         } else {
             return $home.':'.$away;
