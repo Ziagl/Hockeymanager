@@ -359,6 +359,15 @@ function get_play_off($con, $team_id)
 function playoff_games_by_league($con, $playoff)
 {
     $round = $playoff['last_round'] + 1;
+    if($playoff['last_game_day'] == 99) {
+        $stmt = $con->prepare('SELECT MAX(last_round) as max_round FROM Playoff WHERE id = ?');
+        $stmt->bind_param('i', $playoff['id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_array();
+        $round = $row['max_round'];
+        $stmt->close();
+    }
     $stmt = $con->prepare('SELECT g.*, t1.name as team1, t1.id as team1_id, t2.name as team2, t2.id as team2_id FROM PlayoffGame g JOIN Team t1 ON t1.id = g.home_team_id JOIN Team t2 ON t2.id = g.away_team_id WHERE g.round = ? AND g.playoff_id = ? ');
     $stmt->bind_param('ii', $round, $playoff['id']);
     $stmt->execute();
@@ -376,6 +385,10 @@ function playoff_tables_by_league($con, $playoff)
 {
     $games = playoff_games_by_league($con, $playoff);
     $game_day = $playoff['last_game_day'] + 1;
+
+    if($game_day >= 99) {
+        $game_day = 7;
+    }
 
     $team_wins = count_wins_of_team($con, $games, $game_day);
     $result = array();
@@ -479,7 +492,7 @@ function to_next_day($con)
                 }
 
                 // playoff day by day
-                if($playoff != null) {
+                if($playoff != null && $playoff['last_game_day'] != 99) {
                     // move to next game day
                     if($playoff['last_game_day'] < 7) {
                         // update teams
@@ -556,6 +569,12 @@ function to_next_day($con)
                         } else {
                             // season is over!!!!!
                             $stmt = $con->prepare('UPDATE State SET season_over = 1');
+                            $stmt->execute();
+                            $stmt->close();
+
+                            // move to next round
+                            $stmt = $con->prepare('UPDATE Playoff SET last_game_day = 99 WHERE id = ?');
+                            $stmt->bind_param('i', $playoff['id']);
                             $stmt->execute();
                             $stmt->close();
                         }

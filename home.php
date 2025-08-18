@@ -284,6 +284,7 @@ foreach($teams as $team) {
 </div>
 <?php } else if ($playoff != null) { ?>
 <div id='Table' class='tabcontent' style='display: none;'>
+<?php if ($playoff['last_game_day'] != 99) { ?>
 <table>
 	<tr>
 		<th>#</th>
@@ -311,6 +312,7 @@ foreach($data as $table) {
 }
 ?>
 </table>
+<?php } ?>
 </div>
 <?php } else { ?>
 <div id='Table' class='tabcontent' style='display: none;'>
@@ -389,8 +391,12 @@ foreach($teams as $team) {
 </div>
 <?php }
 // display game plan for playoff, playdown or league
-if($playoff != null) { 
-	$games = get_games_by_playoff($con, $playoff);
+if($playoff != null) {
+	$games = array();
+	// only if season is not over
+	if($playoff['last_game_day'] != 99) {
+		$games = get_games_by_playoff($con, $playoff);
+	}
 } else if ($playdown != null) {
 	$games = get_games_by_playdown($con, $playdown);
 } else {
