@@ -294,15 +294,21 @@ foreach($teams as $team) {
 	</tr>
 <?php
 $data =	playoff_tables_by_league($con, $playoff);
+$teamsLeague = get_team_by_points_of_league($con, $user_league['id']);
 $index = 0;
 foreach($data as $table) {
 	$index++;
-	$teamNumber = 0;
+	$teamPositions = array();
+	$teamPosition = 0;
+	foreach($teamsLeague as $team)
+	{
+		$teamPosition++;
+		$teamPositions[$team['id']] = $teamPosition;
+	}
 	foreach($table as $team) {
-		$teamNumber++;
 ?>
 	<tr>
-		<td><?php if($teamNumber % 2 != 0) echo $index; ?></td>
+		<td><?php echo $teamPositions[$team[0]]; ?></td>
 		<td><div class="image-text-wrapper"><img src='<?="images/".$team[0].".png"?>' class='team-logo'/><?php echo $team[1] ?></td>
 		<td><?php echo $team[2] ?></td>
 		<td><?php echo $team[3] ?></td>
