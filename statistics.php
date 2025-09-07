@@ -17,8 +17,8 @@ include 'content/header.php';
     foreach($leagues as $league) {	
 ?>
 <div id='<?=$league['name']?>' class='tabcontent' style='display: none;'>
-<!-- playoff -->
-<?php 
+<?php
+// playoff
 $teamsLeague = get_team_by_points_of_league($con, $league['id']);
 $playdown = get_playdown_by_league_id($con, $league['id']);
 $playoff = get_playoff_by_league_id($con, $league['id']);
@@ -201,8 +201,8 @@ foreach($teams as $team) {
 	<p>* <?=$translator->__('victory after penalty shootout',$language)?></p>
 <?php // display playdown games end ?>
 </div>
-<?php } ?>
-<!-- league -->
+<?php } 
+// league?>
 <div class='statistic-table'>
     <p><?=$translator->__('League table',$language)?> <?=$league['name']?> (<?=$league['last_game_day']?>/<?=$league['max_game_days']?>):</p>
     <table>
