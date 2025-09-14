@@ -245,7 +245,7 @@ foreach($teamsLeague as $team) {
 				if($index < $table_playoff) {
 					echo 'class="table-playoff"';
 				}
-				if($index >= count($teams) - $table_relegate) {
+				if($index >= count($teamsLeague) - $table_relegate) {
 					echo 'class="table-relegate"';
 				}
 			?>><?=++$index?><?php
@@ -255,7 +255,7 @@ foreach($teamsLeague as $team) {
 				else if($index <= $table_playoff) { ?>
 					<i class="fas fa-trophy table-playoff"></i>
 				<?php }
-				if($index > count($teams) - $table_relegate) { ?>
+				if($index > count($teamsLeague) - $table_relegate) { ?>
 					<i class="fas fa-chevron-down table-relegate"></i>
 				<?php }
 			?></td>
